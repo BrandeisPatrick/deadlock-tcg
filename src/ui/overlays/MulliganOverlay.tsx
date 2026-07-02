@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { CardInstance } from '@/engine/types';
 import { CardFrame } from '../card/CardFrame';
-import { palette, radius, shadow, spring, text } from '../tokens';
+import { palette, shadow, spring, text } from '../tokens';
+import { GameButton } from '../chrome';
 import { useViewport } from '../hooks/useViewport';
 
 interface Props {
@@ -52,10 +53,10 @@ export function MulliganOverlay({ cards, onConfirm }: Props) {
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 14,
           padding: '10px 32px',
-          background: palette.bg1,
+          background: `linear-gradient(180deg, ${palette.bg2}, ${palette.bg1})`,
           border: `1px solid #5a3f1c`,
           borderRadius: 999,
-          boxShadow: '0 4px 12px rgba(40, 20, 0, 0.18)',
+          boxShadow: '0 6px 16px rgba(40, 20, 0, 0.22), inset 0 1px 0 rgba(255, 244, 214, 0.7), inset 0 0 0 3px rgba(176, 120, 37, 0.15)',
         }}>
           <span style={{ ...text.label, color: palette.text }}>
             Reshuffle Your Opening
@@ -145,25 +146,13 @@ export function MulliganOverlay({ cards, onConfirm }: Props) {
         transition={{ ...spring.snappy, delay: 0.1 }}
         style={{ display: 'flex', gap: 14 }}
       >
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          whileHover={{ scale: 1.03, y: -2 }}
+        <GameButton
+          variant="brass"
           onClick={() => onConfirm([...selected])}
-          style={{
-            background: swapCount === 0
-              ? `linear-gradient(180deg, ${palette.success}cc, ${palette.success}55)`
-              : `linear-gradient(180deg, ${palette.accent}cc, ${palette.accent}55)`,
-            padding: '14px 32px',
-            border: `1px solid ${swapCount === 0 ? palette.success : palette.accent}`,
-            borderRadius: radius.md,
-            boxShadow: swapCount === 0 ? `0 0 18px ${palette.success}55` : `0 0 18px ${palette.accent}55`,
-            cursor: 'pointer',
-            minWidth: 200,
-            ...text.label, color: palette.text,
-          }}
+          style={{ minWidth: 200, textAlign: 'center' }}
         >
           {swapCount === 0 ? 'Lock In' : `Reshuffle ${swapCount}`}
-        </motion.button>
+        </GameButton>
       </motion.div>
     </motion.div>
   );

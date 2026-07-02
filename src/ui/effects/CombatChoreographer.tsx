@@ -139,7 +139,8 @@ export function CombatChoreographer({ plan, slotRefs, onComplete, stepDuration =
         onClick={skip}
         style={{
           position: 'fixed',
-          top: 16, right: 16,
+          // right offset clears the persistent system gear in the corner.
+          top: 16, right: 62,
           zIndex: 90,
           padding: '8px 16px',
           background: `linear-gradient(180deg, ${palette.bg1}, ${palette.bg2})`,

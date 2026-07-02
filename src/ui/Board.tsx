@@ -21,6 +21,8 @@ import { MAX_EQUIPMENT_PER_HERO, RETREAT_COST } from '@/engine/game';
 import { BenchRow } from './board/BenchRow';
 import { ActiveSlot } from './board/ActiveSlot';
 import { ActiveDuel } from './board/ActiveDuel';
+import { BoardTable, boardRows } from './board/BoardTable';
+import { BoardControls } from './board/BoardControls';
 import { enumerateAIMoves } from '@/ai/heuristic';
 import { getAbility, type TargetFilter } from '@/abilities';
 import { planAttackPhase, type AttackPlan } from '@/engine/combat';
@@ -31,9 +33,11 @@ import { DamageFxContext, type DamageFxResolver } from './effects/DamageFxContex
 import { UltMomentFlash } from './effects/UltMomentFlash';
 import { CardPlayFlash } from './effects/CardPlayFlash';
 import { COMBAT_STEP_MS } from './hooks/useCombatSpeed';
+import { useSettings } from '@/storage/settings';
 import { useFitScale } from './hooks/useFitScale';
 import { useViewport } from './hooks/useViewport';
 import { palette, fonts, radius, shadow, spring, text, DAMAGE_BEAT_MS } from './tokens';
+import { GameButton } from './chrome';
 import { SidePanel } from './side-panel/SidePanel';
 import { PanelDrawer } from './side-panel/PanelDrawer';
 import { HandTray } from './board/HandTray';
@@ -48,6 +52,8 @@ export function Board(props: BoardProps<GameState>) {
   const { G, ctx, moves } = props;
   const me: PlayerID = '0';
   const isMyTurn = ctx.currentPlayer === me;
+  // Combat tempo honours the system-menu speed setting live.
+  const { combatSpeed } = useSettings();
   const [pending, setPending] = useState<PendingPlay | null>(null);
   // Auto-play: when on, the same AI that runs the opponent also drives the
   // local player's turns, so the match plays itself hands-free. Toggle in the
@@ -522,8 +528,12 @@ export function Board(props: BoardProps<GameState>) {
           animate={{ scale: 1, opacity: 1 }}
           transition={spring.bouncy}
           style={{
-            fontSize: 22, fontWeight: 700, color: tone,
-            textShadow: `0 0 40px ${tone}aa`, margin: 0,
+            fontFamily: fonts.display,
+            fontSize: isMobile ? 40 : 56,
+            fontWeight: 400,
+            color: tone,
+            textShadow: `0 0 44px ${tone}88, 0 2px 0 rgba(255, 244, 214, 0.5)`,
+            margin: 0,
           }}
         >{txt}</motion.h1>
         {isStory && !ctx.gameover.draw && (
@@ -531,15 +541,11 @@ export function Board(props: BoardProps<GameState>) {
             {won ? 'The block is yours — press on uptown.' : 'Your run ends in the old city.'}
           </div>
         )}
-        <button
+        <GameButton
+          variant="brass"
           onClick={() => { if (isStory) finishStoryBattle(won); else location.reload(); }}
-          style={{
-            background: `linear-gradient(180deg, ${tone}aa, ${tone}66)`,
-            color: palette.text, padding: '16px 40px', border: 'none', borderRadius: 12,
-            fontFamily: fonts.ui, fontSize: 12, fontWeight: 700,
-            cursor: 'pointer', boxShadow: shadow.lg,
-          }}
-        >{isStory ? 'Return to Map' : 'Rematch'}</button>
+          style={{ minWidth: 180, textAlign: 'center' }}
+        >{isStory ? 'Return to Map' : 'Rematch'}</GameButton>
       </div>
     );
   }
@@ -610,17 +616,29 @@ export function Board(props: BoardProps<GameState>) {
             <OpponentHand cards={G.players[opp].hand} />
           </div>
 
-          {/* 3×3 BOARD GRID — wraps the three rows (opp bench, lane, my
-              bench) in a positioning context so SoulsRail can pin to the
-              right edge, running parallel to the grid. */}
+          {/* 3×3 BOARD GRID — the three rows (opp bench, lane, my bench)
+              sit on a painted tabletop (BoardTable) and the whole plane is
+              tilted a few degrees on desktop so the battlefield reads as a
+              physical table receding away from the player. Mobile stays
+              flat (vertical space is too tight for the tilt). */}
+          <div style={{
+            perspective: isMobile ? undefined : 1500,
+            perspectiveOrigin: '50% 30%',
+          }}>
           <div style={{
             position: 'relative',
             display: 'flex',
             flexDirection: 'column',
-            gap: isMobile ? 20 : 40,
+            gap: boardRows.gap(isMobile),
+            // translateZ(0) on mobile keeps a stacking context so the
+            // table layer can never paint over the rows on either branch.
+            transform: isMobile ? 'translateZ(0)' : 'rotateX(9deg)',
           }}>
+            {/* Painted tabletop — decorative layer behind the rows. */}
+            <BoardTable isMobile={isMobile} />
+
             {/* OPP BENCH (3 cards) */}
-            <div style={{ flex: isMobile ? '0 0 150px' : '0 0 180px', height: isMobile ? 150 : 180 }}>
+            <div style={{ position: 'relative', zIndex: 1, flex: `0 0 ${boardRows.bench(isMobile)}px`, height: boardRows.bench(isMobile) }}>
               <BenchRow
                 ps={G.players[opp]}
                 owner={opp} myId={me}
@@ -637,7 +655,7 @@ export function Board(props: BoardProps<GameState>) {
             {/* THE DUEL — opp active and my active side by side. Active row
                 is bench × golden ratio (180 × 1.618 ≈ 291) so the duel still
                 reads as the focus while bench tiles show full portraits. */}
-            <div style={{ flex: isMobile ? '0 0 206px' : '0 0 290px', height: isMobile ? 206 : 290 }}>
+            <div style={{ position: 'relative', zIndex: 1, flex: `0 0 ${boardRows.lane(isMobile)}px`, height: boardRows.lane(isMobile) }}>
               <ActiveDuel
                 G={G}
                 me={me}
@@ -655,7 +673,7 @@ export function Board(props: BoardProps<GameState>) {
             </div>
 
             {/* MY BENCH (3 cards) */}
-            <div style={{ flex: isMobile ? '0 0 150px' : '0 0 180px', height: isMobile ? 150 : 180 }}>
+            <div style={{ position: 'relative', zIndex: 1, flex: `0 0 ${boardRows.bench(isMobile)}px`, height: boardRows.bench(isMobile) }}>
               <BenchRow
                 ps={G.players[me]}
                 owner={me} myId={me}
@@ -676,6 +694,32 @@ export function Board(props: BoardProps<GameState>) {
               rivalSouls={G.players[opp].souls}
               yourSouls={G.players[me].souls}
             />
+
+            {/* Turn controls — a felt shelf hanging off the table's
+                front-right rim, inside the tilted plane so it reads as
+                part of the table. Phones keep the controls in the hand
+                tray instead (no room under the board). */}
+            {!isMobile && (
+              <div style={{
+                position: 'absolute',
+                right: -26,
+                top: '100%',
+                marginTop: 34,
+                zIndex: 2,
+              }}>
+                <BoardControls
+                  variant="table"
+                  isMyTurn={isMyTurn}
+                  busy={isMyTurn && (!!combatPlan || G.action?.state === 'begin' || queuedEndRef.current)}
+                  hasPending={!!pending}
+                  autoPlay={autoPlay}
+                  onEnd={() => { setPending(null); triggerEndTurn(); }}
+                  onCancel={() => setPending(null)}
+                  onToggleAuto={() => setAutoPlay((v) => !v)}
+                />
+              </div>
+            )}
+          </div>
           </div>
 
           <div style={{ flex: '0 0 auto' }}>
@@ -847,7 +891,7 @@ export function Board(props: BoardProps<GameState>) {
             <CombatChoreographer
               plan={combatPlan}
               slotRefs={slotRefs.current}
-              stepDuration={COMBAT_STEP_MS}
+              stepDuration={COMBAT_STEP_MS / combatSpeed}
               onComplete={handleCombatComplete}
               onBeatIndexChange={setCombatBeat}
             />

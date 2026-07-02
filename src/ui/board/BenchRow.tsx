@@ -2,7 +2,8 @@ import type { CSSProperties } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { CardInstance, PlayerID, PlayerState } from '@/engine/types';
 import { HeroSlot } from './HeroSlot';
-import { palette, text } from '../tokens';
+import { RowPlaque, SlotWell } from './BoardTable';
+import { palette } from '../tokens';
 import { useViewport } from '../hooks/useViewport';
 
 interface Props {
@@ -41,12 +42,7 @@ export function BenchRow({
     }}>
       {/* Side label crowds the cards on a phone — desktop only. */}
       {!isMobile && (
-        <span style={{
-          position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-          ...text.label, color: palette.textDim,
-        }}>
-          {isOpponent ? 'Rival · Bench' : 'Your · Bench'}
-        </span>
+        <RowPlaque>{isOpponent ? 'Rival · Bench' : 'Your · Bench'}</RowPlaque>
       )}
       <div style={{
         display: 'grid',
@@ -101,21 +97,5 @@ export function BenchRow({
 const emptyDivStyle: CSSProperties = { display: 'block', height: '100%', minHeight: 0 };
 
 function EmptyBenchSlot({ accent }: { accent: string }) {
-  return (
-    <div style={{
-      position: 'relative',
-      width: '100%',
-      height: '100%',
-      borderRadius: 4,
-      background: 'rgba(255,255,255,0.012)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      overflow: 'hidden',
-    }}>
-      <span style={{ position: 'absolute', top: 0, left: 0, width: 7, height: 7, borderTop: `1px solid ${accent}44`, borderLeft: `1px solid ${accent}44` }} />
-      <span style={{ position: 'absolute', top: 0, right: 0, width: 7, height: 7, borderTop: `1px solid ${accent}44`, borderRight: `1px solid ${accent}44` }} />
-      <span style={{ position: 'absolute', bottom: 0, left: 0, width: 7, height: 7, borderBottom: `1px solid ${accent}44`, borderLeft: `1px solid ${accent}44` }} />
-      <span style={{ position: 'absolute', bottom: 0, right: 0, width: 7, height: 7, borderBottom: `1px solid ${accent}44`, borderRight: `1px solid ${accent}44` }} />
-      <span style={{ color: `${accent}55`, fontSize: 22, fontWeight: 400 }}>+</span>
-    </div>
-  );
+  return <SlotWell accent={accent} />;
 }

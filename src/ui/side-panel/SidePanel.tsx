@@ -35,19 +35,35 @@ export function SidePanel({
   })();
   return (
     <aside style={{
+      position: 'relative',
       display: 'flex', flexDirection: 'column', gap: 12,
       padding: '14px 14px 14px',
-      background: palette.bg1,
-      border: `1px solid #5a3f1c`,
+      background: `linear-gradient(180deg, ${palette.bg2}, ${palette.bg1} 30%, #e6d4ab)`,
+      // Same material family as the tabletop rim: mahogany frame, warm top
+      // highlight, brass inner keyline (the absolute layer below).
+      border: '1px solid #5a3f1c',
       borderRadius: radius.lg,
-      boxShadow: '0 4px 12px rgba(40, 20, 0, 0.22)',
+      boxShadow: [
+        '0 14px 34px rgba(40, 20, 0, 0.30)',
+        '0 3px 10px rgba(40, 20, 0, 0.20)',
+        'inset 0 1px 0 rgba(255, 244, 214, 0.7)',
+      ].join(', '),
       minHeight: 0,
       height: '100%',
       overflow: 'hidden',
     }}>
+      {/* Brass keyline — engraved inner frame matching the table inlay. */}
+      <div aria-hidden style={{
+        position: 'absolute',
+        inset: 4,
+        borderRadius: radius.lg - 2,
+        border: '1px solid rgba(176, 120, 37, 0.35)',
+        pointerEvents: 'none',
+      }} />
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        paddingBottom: 8, borderBottom: `1px solid ${palette.border}`,
+        paddingBottom: 8, borderBottom: `1px solid ${palette.borderStrong}`,
+        boxShadow: '0 1px 0 rgba(255, 244, 214, 0.55)',
       }}>
         <span style={{ ...text.label, color: palette.textDim }}>Patrol</span>
         <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6 }}>

@@ -1,6 +1,7 @@
 import { ActiveSlot } from './ActiveSlot';
 import type { CardInstance, GameState, PlayerID } from '@/engine/types';
-import { palette, text } from '../tokens';
+import { palette } from '../tokens';
+import { RowPlaque } from './BoardTable';
 import { TurnCompass } from './TurnCompass';
 import { useViewport } from '../hooks/useViewport';
 
@@ -49,14 +50,7 @@ export function ActiveDuel({
       {/* Lane label — sits at the left edge of the row, matching the Bench
           labels' position so the three section labels stack down the left
           side of the board. One shared label since both sides share the lane. */}
-      {!isMobile && (
-        <span style={{
-          position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-          ...text.label, color: palette.textDim,
-        }}>
-          Lane
-        </span>
-      )}
+      {!isMobile && <RowPlaque>Lane</RowPlaque>}
       {/* Opp Active (left) */}
       <ActiveSlot
         ps={G.players[opp]}

@@ -1,7 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import type { CardInstance, PlayerID, PlayerState } from '@/engine/types';
 import { HeroSlot } from './HeroSlot';
-import { palette, text } from '../tokens';
+import { SlotWell } from './BoardTable';
+import { palette } from '../tokens';
 
 interface Props {
   ps: PlayerState;
@@ -75,21 +76,5 @@ export function ActiveSlot({
 }
 
 function EmptyActive({ accent }: { accent: string }) {
-  return (
-    <div style={{
-      position: 'relative',
-      width: '100%',
-      height: '100%',
-      borderRadius: 6,
-      background: 'rgba(255,255,255,0.015)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      overflow: 'hidden',
-    }}>
-      <span style={{ position: 'absolute', top: 0, left: 0, width: 12, height: 12, borderTop: `2px solid ${accent}66`, borderLeft: `2px solid ${accent}66` }} />
-      <span style={{ position: 'absolute', top: 0, right: 0, width: 12, height: 12, borderTop: `2px solid ${accent}66`, borderRight: `2px solid ${accent}66` }} />
-      <span style={{ position: 'absolute', bottom: 0, left: 0, width: 12, height: 12, borderBottom: `2px solid ${accent}66`, borderLeft: `2px solid ${accent}66` }} />
-      <span style={{ position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, borderBottom: `2px solid ${accent}66`, borderRight: `2px solid ${accent}66` }} />
-      <span style={{ ...text.label, color: accent, opacity: 0.5 }}>Active K.O.</span>
-    </div>
-  );
+  return <SlotWell accent={accent} label="Active K.O." />;
 }

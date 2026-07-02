@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { palette, fonts, spring, text, shadow } from '../tokens';
-import { loadPlayerData, savePlayerData, deleteDeck, setSelectedDeckIndex, MAX_DECKS, DECK_SIZE } from '@/storage/playerData';
+import { MenuShell, BackPlaque, ScreenHeading, GameButton } from '../chrome';
+import { loadPlayerData, deleteDeck, setSelectedDeckIndex, MAX_DECKS, DECK_SIZE } from '@/storage/playerData';
 import type { DeckSlot } from '@/storage/playerData';
 import { CARDS_BY_ID } from '@/cards';
 import { useViewport } from '../hooks/useViewport';
@@ -26,47 +27,15 @@ export function DeckManagerScreen({ onBack, onEditDeck }: Props) {
   }
 
   return (
-    <div style={{
-      minHeight: '100dvh',
-      background: palette.bg0,
-      color: palette.text,
-      fontFamily: fonts.ui,
-      padding: isMobile ? '24px 14px 40px' : '40px 64px 60px',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-    }}>
-      <div style={{ width: '100%', maxWidth: 1100 }}>
-        <motion.button
-          onClick={onBack}
-          whileHover={{ x: -4 }}
-          transition={spring.snappy}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: fonts.ui,
-            fontSize: 13,
-            fontWeight: 700,
-            color: palette.accent,
-            padding: '8px 0',
-            marginBottom: 8,
-          }}
-        >
-          ← Back
-        </motion.button>
+    <MenuShell>
+      <>
+        <BackPlaque onClick={onBack} />
 
-        <div style={{
-          fontFamily: fonts.display,
-          fontSize: isMobile ? 28 : 36,
-          color: palette.text,
-          marginBottom: 8,
-        }}>
-          Deck Manager
-        </div>
-        <div style={{ ...text.body, color: palette.textDim, marginBottom: 32 }}>
-          Build decks of {DECK_SIZE} spells and equipment. Select a deck before starting a match.
-        </div>
+        <ScreenHeading
+          compact={isMobile}
+          title="Deck Manager"
+          subtitle={`Build decks of ${DECK_SIZE} spells and equipment. Select a deck before starting a match.`}
+        />
 
         <div style={{
           display: 'grid',
@@ -89,8 +58,8 @@ export function DeckManagerScreen({ onBack, onEditDeck }: Props) {
             );
           })}
         </div>
-      </div>
-    </div>
+      </>
+    </MenuShell>
   );
 }
 
@@ -179,9 +148,11 @@ function DeckCard({ index, deck, isSelected, onEdit, onSelect, onDelete }: {
         transition={spring.snappy}
         style={{
           padding: 28,
-          border: `2px dashed ${palette.border}`,
-          borderRadius: 10,
-          background: 'rgba(245,232,204,0.4)',
+          border: '1px dashed rgba(90, 63, 28, 0.5)',
+          borderRadius: 12,
+          // Recessed well — an empty deck slot is carved, not drawn.
+          background: 'linear-gradient(180deg, rgba(84, 58, 22, 0.13), rgba(84, 58, 22, 0.06) 55%, rgba(84, 58, 22, 0.10))',
+          boxShadow: 'inset 0 3px 9px rgba(70, 45, 12, 0.28), inset 0 -1px 0 rgba(255, 244, 214, 0.5)',
           cursor: 'pointer',
           display: 'flex',
           flexDirection: 'column',
@@ -247,12 +218,15 @@ function DeckCard({ index, deck, isSelected, onEdit, onSelect, onDelete }: {
       whileHover={{ y: -4 }}
       transition={spring.snappy}
       style={{
-        borderRadius: 10,
-        background: palette.bg1,
+        borderRadius: 12,
+        // Ledger panel — same material family as the side panel and table.
+        background: `linear-gradient(180deg, ${palette.bg2}, ${palette.bg1} 30%, #e6d4ab)`,
         border: isSelected
           ? `2px solid ${palette.accent}`
-          : `1px solid ${palette.borderStrong}`,
-        boxShadow: isSelected ? shadow.glowAccent : shadow.sm,
+          : '1px solid #5a3f1c',
+        boxShadow: isSelected
+          ? `${shadow.glowAccent}, 0 12px 28px rgba(40, 20, 0, 0.22)`
+          : '0 10px 26px rgba(40, 20, 0, 0.2), inset 0 1px 0 rgba(255, 244, 214, 0.7)',
         display: 'flex',
         flexDirection: 'column',
         minHeight: 260,
@@ -260,6 +234,15 @@ function DeckCard({ index, deck, isSelected, onEdit, onSelect, onDelete }: {
         overflow: 'hidden',
       }}
     >
+      {/* Brass keyline — engraved inner frame matching the table inlay. */}
+      <div aria-hidden style={{
+        position: 'absolute',
+        inset: 4,
+        borderRadius: 8,
+        border: '1px solid rgba(176, 120, 37, 0.3)',
+        pointerEvents: 'none',
+        zIndex: 1,
+      }} />
       {/* Active badge */}
       {isSelected && (
         <div style={{
@@ -384,57 +367,22 @@ function DeckCard({ index, deck, isSelected, onEdit, onSelect, onDelete }: {
         )}
       </div>
 
-      {/* Buttons */}
+      {/* Buttons — parchment secondary, brass primary, wine destructive. */}
       <div style={{
         display: 'flex',
         gap: 8,
         padding: '14px 22px 18px',
         marginTop: 'auto',
         borderTop: `1px solid ${palette.border}`,
+        boxShadow: '0 -1px 0 rgba(255, 244, 214, 0.5)',
       }}>
-        <motion.button
-          onClick={onEdit}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          transition={spring.snappy}
-          style={{
-            flex: 1,
-            padding: '10px 14px',
-            border: `1px solid ${palette.borderStrong}`,
-            borderRadius: 6,
-            background: palette.bg2,
-            cursor: 'pointer',
-            fontFamily: fonts.ui,
-            fontSize: 12,
-            fontWeight: 700,
-            color: palette.text,
-            boxShadow: shadow.sm,
-          }}
-        >
+        <GameButton variant="parchment" size="sm" onClick={onEdit} style={{ flex: 1 }}>
           Edit
-        </motion.button>
+        </GameButton>
         {isValid && !isSelected ? (
-          <motion.button
-            onClick={onSelect}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            transition={spring.snappy}
-            style={{
-              flex: 1,
-              padding: '10px 14px',
-              border: 'none',
-              borderRadius: 6,
-              background: palette.accent,
-              cursor: 'pointer',
-              fontFamily: fonts.ui,
-              fontSize: 12,
-              fontWeight: 700,
-              color: '#fff',
-              boxShadow: shadow.sm,
-            }}
-          >
+          <GameButton variant="brass" size="sm" onClick={onSelect} style={{ flex: 1 }}>
             Select
-          </motion.button>
+          </GameButton>
         ) : isSelected ? (
           <div style={{
             flex: 1,
@@ -448,25 +396,9 @@ function DeckCard({ index, deck, isSelected, onEdit, onSelect, onDelete }: {
             In use
           </div>
         ) : null}
-        <motion.button
-          onClick={onDelete}
-          whileHover={{ scale: 1.02, background: 'rgba(138,46,42,0.08)' }}
-          whileTap={{ scale: 0.95 }}
-          transition={spring.snappy}
-          style={{
-            padding: '10px 14px',
-            border: `1px solid rgba(138,46,42,0.3)`,
-            borderRadius: 6,
-            background: 'transparent',
-            cursor: 'pointer',
-            fontFamily: fonts.ui,
-            fontSize: 11,
-            fontWeight: 700,
-            color: palette.danger,
-          }}
-        >
+        <GameButton variant="wine" size="sm" onClick={onDelete}>
           Delete
-        </motion.button>
+        </GameButton>
       </div>
     </motion.div>
   );

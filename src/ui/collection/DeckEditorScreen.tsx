@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { palette, fonts, spring, text, shadow } from '../tokens';
+import { palette, fonts, spring, text } from '../tokens';
+import { BackPlaque, GameButton } from '../chrome';
 import { getDeck, saveDeck, DECK_SIZE, MAX_COPIES } from '@/storage/playerData';
 import type { DeckSlot } from '@/storage/playerData';
 import { SPELLS, EQUIPMENT, CARDS_BY_ID } from '@/cards';
@@ -61,33 +62,22 @@ export function DeckEditorScreen({ slotIndex, onBack }: Props) {
       display: 'flex',
       flexDirection: 'column',
     }}>
-      {/* Header bar */}
+      {/* Header bar — ledger strip: parchment gradient, mahogany rule,
+          warm top highlight; actions in the shared chrome components. */}
       <div style={{
-        padding: isMobile ? '12px 14px' : '16px 40px',
-        borderBottom: `1px solid ${palette.border}`,
-        background: palette.bg1,
+        padding: isMobile ? '12px 14px' : '14px 40px',
+        borderBottom: '1px solid #5a3f1c',
+        background: `linear-gradient(180deg, ${palette.bg2}, ${palette.bg1})`,
+        boxShadow: 'inset 0 1px 0 rgba(255, 244, 214, 0.7), 0 4px 12px rgba(40, 20, 0, 0.12)',
         display: 'flex',
         alignItems: 'center',
         gap: isMobile ? 10 : 20,
         flexWrap: isMobile ? 'wrap' : 'nowrap',
         flexShrink: 0,
+        position: 'relative',
+        zIndex: 2,
       }}>
-        <motion.button
-          onClick={onBack}
-          whileHover={{ x: -4 }}
-          transition={spring.snappy}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: fonts.ui,
-            fontSize: 13,
-            fontWeight: 700,
-            color: palette.accent,
-          }}
-        >
-          ← Cancel
-        </motion.button>
+        <BackPlaque onClick={onBack} label="Cancel" />
 
         <input
           value={name}
@@ -98,9 +88,10 @@ export function DeckEditorScreen({ slotIndex, onBack }: Props) {
             minWidth: isMobile ? 140 : undefined,
             maxWidth: isMobile ? undefined : 300,
             padding: '8px 14px',
-            border: `1px solid ${palette.border}`,
-            borderRadius: 6,
-            background: palette.bg2,
+            border: '1px solid rgba(90, 63, 28, 0.5)',
+            borderRadius: 8,
+            background: palette.card.body,
+            boxShadow: 'inset 0 2px 5px rgba(70, 45, 12, 0.15)',
             fontFamily: fonts.display,
             fontSize: 18,
             color: palette.text,
@@ -112,31 +103,15 @@ export function DeckEditorScreen({ slotIndex, onBack }: Props) {
           fontFamily: fonts.ui,
           fontSize: 14,
           fontWeight: 700,
+          fontVariantNumeric: 'tabular-nums',
           color: isFull ? palette.success : palette.textDim,
         }}>
           {cards.length} / {DECK_SIZE}
         </div>
 
-        <motion.button
-          onClick={handleSave}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          transition={spring.snappy}
-          style={{
-            padding: '10px 28px',
-            border: 'none',
-            borderRadius: 6,
-            background: palette.accent,
-            color: '#fff',
-            fontFamily: fonts.ui,
-            fontSize: 13,
-            fontWeight: 700,
-            cursor: 'pointer',
-            boxShadow: shadow.sm,
-          }}
-        >
+        <GameButton variant="brass" size="sm" onClick={handleSave}>
           Save Deck
-        </motion.button>
+        </GameButton>
       </div>
 
       {/* Main content: pool (left) + deck (right). Phones stack them and let
@@ -159,10 +134,16 @@ export function DeckEditorScreen({ slotIndex, onBack }: Props) {
                 onClick={() => setFilter(f)}
                 style={{
                   padding: '6px 16px',
-                  border: filter === f ? `1px solid ${palette.accent}` : `1px solid ${palette.border}`,
+                  border: filter === f ? '1px solid #5a3f1c' : '1px solid rgba(90, 63, 28, 0.35)',
                   borderRadius: 999,
-                  background: filter === f ? palette.accent : 'transparent',
-                  color: filter === f ? '#fff' : palette.text,
+                  background: filter === f
+                    ? 'linear-gradient(180deg, #e2ab42, #b07825 55%, #955f19)'
+                    : 'transparent',
+                  color: filter === f ? '#241503' : palette.textDim,
+                  textShadow: filter === f ? '0 1px 0 rgba(255, 235, 180, 0.45)' : undefined,
+                  boxShadow: filter === f
+                    ? 'inset 0 1px 0 rgba(255, 240, 200, 0.7), 0 2px 5px rgba(40, 20, 0, 0.25)'
+                    : undefined,
                   fontFamily: fonts.ui,
                   fontSize: 12,
                   fontWeight: 700,

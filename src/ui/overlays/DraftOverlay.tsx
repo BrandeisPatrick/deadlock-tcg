@@ -180,6 +180,9 @@ function Header({
         alignItems: 'baseline',
         justifyContent: 'space-between',
         marginBottom: 14,
+        // Right padding keeps the status pill clear of the persistent
+        // system gear pinned to the viewport corner.
+        paddingRight: 44,
         paddingBottom: 12,
         borderBottom: `1px solid ${palette.border}`,
       }}

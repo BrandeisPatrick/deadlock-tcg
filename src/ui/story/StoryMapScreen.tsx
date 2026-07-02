@@ -494,7 +494,8 @@ function RunHud({ run, onExit, onAbandon, isMobile }: { run: StoryRun; onExit: (
         onClick={onAbandon}
         aria-label="Abandon run and start over"
         style={{
-          position: 'absolute', top: 14, right: 14,
+          // right offset clears the persistent system gear in the corner.
+          position: 'absolute', top: 14, right: 62,
           background: 'rgba(18,11,3,0.9)', border: `1.5px solid ${palette.danger}`,
           color: palette.bg1, cursor: 'pointer', borderRadius: radius.pill,
           padding: isMobile ? '11px 16px' : '8px 16px', fontFamily: fonts.ui, fontSize: 12, fontWeight: 700,

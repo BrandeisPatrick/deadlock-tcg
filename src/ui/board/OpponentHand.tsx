@@ -80,7 +80,9 @@ export function OpponentHand({ cards }: Props) {
       </AnimatePresence>
       {total > 0 && (
         <span style={{
-          position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+          // right offset keeps the count clear of the persistent system
+          // gear when the board column runs to the viewport edge (mobile).
+          position: 'absolute', right: 56, top: '50%', transform: 'translateY(-50%)',
           display: 'inline-flex', alignItems: 'baseline', gap: 6,
         }}>
           <span style={{ ...text.label, color: palette.textDim }}>Hand</span>

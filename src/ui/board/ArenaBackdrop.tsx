@@ -15,14 +15,22 @@ export function ArenaBackdrop() {
         overflow: 'hidden',
       }}
     >
-      {/* Soft parchment gradient — warmer center, slightly darker at edges */}
+      {/* Soft parchment gradient — a warm lamp pool over the table area so
+          the tilted board sits in its own light, darker toward the edges. */}
       <div style={{
         position: 'absolute', inset: 0,
         background: `
-          radial-gradient(ellipse 90% 50% at 50% 40%, rgba(255, 244, 210, 0.65), transparent 75%),
-          radial-gradient(ellipse 80% 50% at 50% 100%, rgba(120, 80, 30, 0.06), transparent 65%),
+          radial-gradient(ellipse 70% 55% at 50% 46%, rgba(255, 246, 214, 0.85), transparent 70%),
+          radial-gradient(ellipse 90% 50% at 50% 40%, rgba(255, 244, 210, 0.5), transparent 75%),
+          radial-gradient(ellipse 80% 50% at 50% 100%, rgba(120, 80, 30, 0.10), transparent 65%),
           ${palette.bg0}
         `,
+      }} />
+
+      {/* Paper fibre streaks — horizontal, barely-there, sells the material */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'repeating-linear-gradient(180deg, rgba(120, 80, 30, 0.028) 0 1px, transparent 1px 7px)',
       }} />
 
       {/* Faint brown sunburst from center divider */}
@@ -53,10 +61,11 @@ export function ArenaBackdrop() {
         </g>
       </svg>
 
-      {/* Warm brown edge vignette */}
+      {/* Warm brown edge vignette — deeper than before so the lit table
+          reads as the room's focal point. */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: `radial-gradient(ellipse 100% 100% at 50% 55%, transparent 50%, rgba(80, 50, 15, 0.18) 100%)`,
+        background: `radial-gradient(ellipse 100% 100% at 50% 52%, transparent 44%, rgba(80, 50, 15, 0.28) 100%)`,
       }} />
     </div>
   );

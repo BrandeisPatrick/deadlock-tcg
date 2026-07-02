@@ -7,7 +7,8 @@ import { DeckManagerScreen } from './ui/collection/DeckManagerScreen';
 import { DeckEditorScreen } from './ui/collection/DeckEditorScreen';
 import { StoryMapScreen } from './ui/story/StoryMapScreen';
 import { TornEdgeDefs } from './ui/start/tornEdges';
-import { setMatchConfig } from './storage/matchConfig';
+import { SystemLayer } from './ui/system/SystemMenu';
+import { setMatchConfig, getMatchConfig } from './storage/matchConfig';
 import { getPreferredHeroes, getSelectedDeck } from './storage/playerData';
 import type { StoryRun, StoryNode } from './story/types';
 import { loadRun, saveRun, clearNode, setMatchExitHandler } from './story/storyRun';
@@ -110,6 +111,23 @@ export function Root() {
     view.screen === 'deckEdit' ? `deckEdit-${view.slotIndex}` :
     view.screen;
 
+  // System-menu exit: conceding a story battle retreats to the campaign map
+  // (the node stays uncleared, so it can be retried); everything else
+  // returns to the title screen.
+  const systemExit = useCallback(() => {
+    if (view.screen === 'match' && getMatchConfig().story) {
+      pendingBattleNode.current = null;
+      setView({ screen: 'story' });
+    } else {
+      setView({ screen: 'start' });
+    }
+  }, [view.screen]);
+
+  const systemExitLabel =
+    view.screen === 'start' ? '' :
+    view.screen === 'match' ? (getMatchConfig().story ? 'Concede · Back to Map' : 'Concede Match') :
+    'Back to Title';
+
   return (
     <>
       <TornEdgeDefs />
@@ -157,6 +175,14 @@ export function Root() {
           )}
         </motion.div>
       </AnimatePresence>
+
+      {/* Persistent system chrome — same corner on every screen, never
+          part of the screen cross-fade. */}
+      <SystemLayer
+        screen={view.screen}
+        onExitToMenu={systemExit}
+        exitLabel={systemExitLabel}
+      />
     </>
   );
 }
