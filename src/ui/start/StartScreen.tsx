@@ -36,7 +36,9 @@ export function StartScreen({ onPlay, onStory, onHeroes, onDecks }: StartScreenP
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        padding: isMobile ? '16px 12px 28px' : '56px 64px 80px',
+        // Vertical padding compresses on short windows so the tile grid (and
+        // its Play CTA) stays above the fold instead of pushing into scroll.
+        padding: isMobile ? '16px 12px 28px' : 'clamp(20px, 5vh, 56px) 64px clamp(24px, 6vh, 80px)',
         background: palette.bg0,
         color: palette.text,
         fontFamily: fonts.ui,
@@ -60,7 +62,7 @@ export function StartScreen({ onPlay, onStory, onHeroes, onDecks }: StartScreenP
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'stretch',
-          gap: isMobile ? 18 : 36,
+          gap: isMobile ? 18 : 'clamp(16px, 3.5vh, 36px)',
         }}
       >
         <Header compact={isMobile} />
@@ -70,7 +72,10 @@ export function StartScreen({ onPlay, onStory, onHeroes, onDecks }: StartScreenP
           animate="show"
           variants={{
             hidden: {},
-            show: { transition: { staggerChildren: 0.12, delayChildren: 0.5 } },
+            // Quick, tight cascade — the old 0.5s delay + 0.12s stagger left
+            // the menu visibly assembling for ~1.5s, and clicks on tiles that
+            // were still translating in could miss.
+            show: { transition: { staggerChildren: 0.06, delayChildren: 0.12 } },
           }}
           style={isMobile ? {
             // Single-column stack: each tile gets an explicit height below
@@ -83,13 +88,15 @@ export function StartScreen({ onPlay, onStory, onHeroes, onDecks }: StartScreenP
             gridTemplateColumns: '1.35fr 1fr',
             gridTemplateRows: '1.4fr 1fr',
             gap: 24,
-            minHeight: 600,
+            // Shrink with the viewport (short laptop windows) but never below
+            // the height where the tiles' absolute label stacks still fit.
+            minHeight: 'min(600px, max(420px, calc(100dvh - 280px)))',
             maxHeight: 720,
           }}
         >
           <motion.div
             variants={{
-              hidden: { opacity: 0, y: 24 },
+              hidden: { opacity: 0, y: 12 },
               show: { opacity: 1, y: 0, transition: spring.default },
             }}
             style={isMobile ? { height: 150 } : { gridRow: '1', gridColumn: '1', minHeight: 0 }}
@@ -111,7 +118,7 @@ export function StartScreen({ onPlay, onStory, onHeroes, onDecks }: StartScreenP
 
           <motion.div
             variants={{
-              hidden: { opacity: 0, y: 24 },
+              hidden: { opacity: 0, y: 12 },
               show: { opacity: 1, y: 0, transition: spring.default },
             }}
             style={isMobile ? { height: 150 } : { gridRow: '2', gridColumn: '1', minHeight: 0 }}
@@ -134,7 +141,7 @@ export function StartScreen({ onPlay, onStory, onHeroes, onDecks }: StartScreenP
 
           <motion.div
             variants={{
-              hidden: { opacity: 0, y: 24 },
+              hidden: { opacity: 0, y: 12 },
               show: { opacity: 1, y: 0, transition: spring.default },
             }}
             style={isMobile ? { height: 122 } : { gridRow: '1', gridColumn: '2', minHeight: 0 }}
@@ -158,7 +165,7 @@ export function StartScreen({ onPlay, onStory, onHeroes, onDecks }: StartScreenP
 
           <motion.div
             variants={{
-              hidden: { opacity: 0, y: 24 },
+              hidden: { opacity: 0, y: 12 },
               show: { opacity: 1, y: 0, transition: spring.default },
             }}
             style={isMobile
@@ -255,7 +262,7 @@ function HeroPortraitFan() {
           draggable={false}
           initial={{ opacity: 0, y: 14, rotate: h.rotate * 0.3 }}
           animate={{ opacity: h.focused ? 1 : 0.88, y: 0, rotate: h.rotate }}
-          transition={{ ...spring.soft, delay: 0.9 + i * 0.08 }}
+          transition={{ ...spring.soft, delay: 0.4 + i * 0.07 }}
           style={{
             position: 'absolute',
             left: '50%',
@@ -447,7 +454,7 @@ function Footer() {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ ...spring.soft, delay: 1.0 }}
+      transition={{ ...spring.soft, delay: 0.45 }}
       style={{
         textAlign: 'center',
         marginTop: 'auto',

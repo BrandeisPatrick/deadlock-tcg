@@ -8,13 +8,17 @@
 import { NYC_VIEW, NYC_BOROUGHS, NYC_ROADS, NYC_PARK, NYC_RESERVOIR } from './nycGeo';
 
 const VW = NYC_VIEW.w, VH = NYC_VIEW.h;
-const WATER_TOP = '#37658f';
-const WATER_BOT = '#244b6e';
-const SHORE = 'rgba(150, 192, 218, 0.55)';
+// Slightly richer than the original "laser-cut wood" ramp — at full-screen
+// the flat olive/steel read as washed out. Deeper, bluer water + a lighter
+// Manhattan + greener parks give the scene contrast without losing the
+// vintage-map tone.
+const WATER_TOP = '#33689a';
+const WATER_BOT = '#1e4a74';
+const SHORE = 'rgba(150, 192, 218, 0.7)';
 const LAND = '#cdb78c';
-const LAND_MANH = '#dcc79b';
+const LAND_MANH = '#e3cfa2';
 const EDGE = '#7a5c2c';
-const PARK = '#93ab74';
+const PARK = '#88a967';
 const STREET = 'rgba(250, 244, 230, ';
 const INK = '#1f3c57';
 
@@ -71,7 +75,7 @@ export function NycMap() {
       {NYC_BOROUGHS.map((b) => (
         <text key={`t-${b.name}`} x={b.lx} y={b.ly} textAnchor="middle"
           fill={b.name === 'Manhattan' ? INK : '#fbf4e4'}
-          opacity={b.name === 'Manhattan' ? 0.6 : 0.9}
+          opacity={b.name === 'Manhattan' ? 0.72 : 0.9}
           style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontWeight: 700, fontSize: b.name === 'Manhattan' ? 15 : 17, letterSpacing: '0.14em' }}>
           {b.name.toUpperCase()}
         </text>
