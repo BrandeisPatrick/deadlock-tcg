@@ -149,6 +149,9 @@ export function HeroSlot({
     <motion.button
       layoutId={`hero-${card.iid}`}
       ref={(el) => { elRef.current = el; registerSlotRef?.(card.iid, el); }}
+      aria-label={isCorpse
+        ? `${data.name} — down, respawns in ${respawnLeft} turn${respawnLeft === 1 ? '' : 's'}`
+        : `${data.name} — ${atk} attack, ${card.hp} health`}
       onClick={() => { if (!pressFired) onTap(card, owner); pressFired = false; }}
       onPointerDown={() => {
         pressFired = false;
@@ -402,6 +405,19 @@ export function HeroSlot({
         }}>
           {data.name}
         </div>
+        {isCorpse ? (
+          // A corpse has no meaningful combat line — "⚔ 4 ♥ 0" read like a
+          // live hero at zero HP. The respawn ring above carries the timer.
+          <div style={{
+            marginTop: 3,
+            ...text.label,
+            fontSize: compact ? 10 : 11,
+            color: palette.textFaint,
+            fontStyle: 'italic',
+          }}>
+            Fell in battle
+          </div>
+        ) : (
         <div style={{
           marginTop: 3,
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -444,6 +460,7 @@ export function HeroSlot({
             >{card.hp}</motion.span>
           </span>
         </div>
+        )}
       </div>
 
       {/* Card shine — restrained board variant: ring + dim holo + soft glare;

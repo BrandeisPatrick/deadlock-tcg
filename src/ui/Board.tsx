@@ -31,7 +31,7 @@ import { SoulsRail } from './board/SoulsRail';
 import { CombatProgressContext, type CombatProgress } from './effects/CombatProgressContext';
 import { DamageFxContext, type DamageFxResolver } from './effects/DamageFxContext';
 import { UltMomentFlash } from './effects/UltMomentFlash';
-import { CardPlayFlash } from './effects/CardPlayFlash';
+import { CardPlayFlash, CARD_REVEAL_MS } from './effects/CardPlayFlash';
 import { COMBAT_STEP_MS } from './hooks/useCombatSpeed';
 import { useSettings } from '@/storage/settings';
 import { useFitScale } from './hooks/useFitScale';
@@ -44,6 +44,8 @@ import { HandTray } from './board/HandTray';
 import { findOnBoard, filterAllows, type PendingPlay } from './helpers';
 import { getMatchConfig } from '@/storage/matchConfig';
 import { finishStoryBattle } from '@/story/storyRun';
+import { MatchEndScreen } from './board/MatchEndScreen';
+import { useMatchNav } from './hooks/matchNav';
 
 // Animation / pacing constants.
 const AI_THINK_MS = 800;        // delay between AI moves; also gives combat anims time to settle
@@ -51,6 +53,7 @@ const AI_THINK_MS = 800;        // delay between AI moves; also gives combat ani
 export function Board(props: BoardProps<GameState>) {
   const { G, ctx, moves } = props;
   const me: PlayerID = '0';
+  const matchNav = useMatchNav();
   const isMyTurn = ctx.currentPlayer === me;
   // Combat tempo honours the system-menu speed setting live.
   const { combatSpeed } = useSettings();
@@ -135,6 +138,17 @@ export function Board(props: BoardProps<GameState>) {
   // Phone widths reflow the board to a narrower, shorter-row layout (cards
   // shrink to ~⅓ of the viewport width) instead of overflowing off the side.
   const { isMobile } = useViewport();
+
+  // panelOpen's initializer only runs once — when the window is resized across
+  // the phone breakpoint mid-match, sync the drawer (phones: the 320px overlay
+  // would bury the whole board; desktop: restore the default-open panel).
+  const wasMobileRef = useRef(isMobile);
+  useEffect(() => {
+    if (isMobile !== wasMobileRef.current) {
+      wasMobileRef.current = isMobile;
+      setPanelOpen(!isMobile);
+    }
+  }, [isMobile]);
 
   const slotRefs = useRef<Map<string, HTMLElement>>(new Map());
   const registerSlotRef = useCallback((iid: string, el: HTMLElement | null) => {
@@ -274,10 +288,13 @@ export function Board(props: BoardProps<GameState>) {
     if (ctx.gameover || !aiControlled || combatPlan) return;
     if (G.action?.state === 'begin') return;
     const t = setTimeout(() => {
-      const opts = enumerateAIMoves(G, ctx);
-      if (opts.length === 0) { triggerEndTurn(); return; }
-      const best = opts[0];
       try {
+        // enumerate inside the try — if the heuristic ever throws, falling
+        // through to endTurn keeps the match moving instead of freezing the
+        // AI's turn forever (nothing else would re-arm this effect).
+        const opts = enumerateAIMoves(G, ctx);
+        if (opts.length === 0) { triggerEndTurn(); return; }
+        const best = opts[0];
         // boardgame.io types `moves` as Record<string, (...args: unknown[]) => void>
         // but won't infer per-move signatures. One Function-typed lookup is
         // tidier than four separate `as any` casts and keeps the AI loop in
@@ -293,6 +310,19 @@ export function Board(props: BoardProps<GameState>) {
     return () => clearTimeout(t);
   }, [ctx.currentPlayer, ctx.turn, G, moves, ctx, combatPlan, triggerEndTurn, G.action, autoPlay, me]);
 
+  // AI watchdog. The loop above re-arms on state changes — but a dispatched
+  // move the engine rejects (INVALID_MOVE) leaves G untouched, so nothing
+  // re-fires and the rival's turn would wedge forever. If an AI-controlled
+  // turn sits with no state change well past the think delay, force the turn
+  // to end so the match always keeps moving.
+  useEffect(() => {
+    const aiControlled = ctx.currentPlayer === '1' || (autoPlay && ctx.currentPlayer === me);
+    if (ctx.gameover || !aiControlled || combatPlan) return;
+    if (G.action?.state === 'begin') return;
+    const t = setTimeout(() => { triggerEndTurn(); }, AI_THINK_MS * 6);
+    return () => clearTimeout(t);
+  }, [ctx.currentPlayer, ctx.turn, G, moves, ctx, combatPlan, triggerEndTurn, G.action, autoPlay, me]);
+
   // Auto-play promotion resolver. The engine only auto-promotes the AI ('1');
   // the local player ('0') normally picks a new Active via the PromotionOverlay.
   // Under auto-play nobody clicks it — and our Active can die on the OPPONENT's
@@ -303,6 +333,10 @@ export function Board(props: BoardProps<GameState>) {
     if (!autoPlay || ctx.gameover || combatPlan) return;
     if (G.action?.state === 'begin') return;
     if (G.pendingPromotion !== me) return;  // single source of truth — set by engine `resolve`
+    // On our own turn the AI loop above already enumerates promoteToActive;
+    // dispatching from both effects raced and spammed `invalid move` for the
+    // loser. This effect only covers promotions owed on the RIVAL's turn.
+    if (ctx.currentPlayer === me) return;
     const ps = G.players[me];
     let best: CardInstance | null = null;
     for (const b of ps.bench) {
@@ -327,8 +361,8 @@ export function Board(props: BoardProps<GameState>) {
     if (G.action?.state !== 'begin') return;
     // Play / skill reveals are a quick "you played X" beat; the ultimate is a
     // dramatic screen-fill that needs longer to land. Keep each in sync with
-    // its overlay's animation length (CardPlayFlash 1.7s / UltMomentFlash 2.3s).
-    const HOLD_MS = G.action.kind === 'ult' ? 2400 : 1700;
+    // its overlay's animation length (CardPlayFlash / UltMomentFlash 2.3s).
+    const HOLD_MS = G.action.kind === 'ult' ? 2400 : CARD_REVEAL_MS;
     const t = setTimeout(() => {
       try { (moves as any).completeAction(); } catch {}
     }, HOLD_MS);
@@ -507,46 +541,20 @@ export function Board(props: BoardProps<GameState>) {
   if (ctx.gameover) {
     const isStory = !!getMatchConfig().story;
     const won = ctx.gameover.winner === me;
-    const tone = won ? palette.success : palette.danger;
-    const txt = ctx.gameover.draw ? 'Draw' :
-      isStory ? (won ? 'Victory' : 'Defeated') :
-      won ? 'Patron Falls' : 'Outflanked';
     // Story battles return to the campaign map (win advances, loss ends the
     // run); a draw counts as a loss so the run still resolves. Quick Match
-    // just reloads for a rematch.
+    // offers Rematch (fresh mount via Root's matchEpoch) and Main Menu.
     return (
-      <div style={{
-        height: '100vh',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        background: `radial-gradient(circle at 50% 35%, ${tone}30, ${palette.bg0})`,
-        fontFamily: fonts.ui, gap: 28,
-        padding: isMobile ? '0 22px' : undefined,
-        textAlign: isMobile ? 'center' : undefined,
-      }}>
-        <motion.h1
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={spring.bouncy}
-          style={{
-            fontFamily: fonts.display,
-            fontSize: isMobile ? 40 : 56,
-            fontWeight: 400,
-            color: tone,
-            textShadow: `0 0 44px ${tone}88, 0 2px 0 rgba(255, 244, 214, 0.5)`,
-            margin: 0,
-          }}
-        >{txt}</motion.h1>
-        {isStory && !ctx.gameover.draw && (
-          <div style={{ ...text.body, color: palette.textDim, marginTop: -14 }}>
-            {won ? 'The block is yours — press on uptown.' : 'Your run ends in the old city.'}
-          </div>
-        )}
-        <GameButton
-          variant="brass"
-          onClick={() => { if (isStory) finishStoryBattle(won); else location.reload(); }}
-          style={{ minWidth: 180, textAlign: 'center' }}
-        >{isStory ? 'Return to Map' : 'Rematch'}</GameButton>
-      </div>
+      <MatchEndScreen
+        G={G}
+        me={me}
+        won={won}
+        draw={!!ctx.gameover.draw}
+        isStory={isStory}
+        onRematch={() => { if (matchNav) matchNav.rematch(); else location.reload(); }}
+        onMenu={matchNav ? matchNav.exitToMenu : null}
+        onStoryReturn={() => finishStoryBattle(won)}
+      />
     );
   }
 
@@ -589,6 +597,7 @@ export function Board(props: BoardProps<GameState>) {
             flex: '1 1 auto',
             maxWidth: 1100,
             width: '100%',
+            position: 'relative', // anchors the corner-pinned turn controls
             display: 'flex',
             flexDirection: 'column',
             // Center the stage vertically so unused space spreads to top/bottom
@@ -603,7 +612,12 @@ export function Board(props: BoardProps<GameState>) {
         <div
           ref={fitContentRef}
           style={{
-            width: '100%',
+            // Desktop: size to the stage's intrinsic width (the rows grid /
+            // painted table) so useFitScale can fit BOTH axes — a 100%-wide
+            // box always "fits" horizontally and the table clipped instead
+            // of scaling on narrow windows.
+            width: isMobile ? '100%' : 'fit-content',
+            alignSelf: 'center',
             display: 'flex',
             flexDirection: 'column',
             // Generous fibonacci gap gives the rows visible breathing room
@@ -695,30 +709,6 @@ export function Board(props: BoardProps<GameState>) {
               yourSouls={G.players[me].souls}
             />
 
-            {/* Turn controls — a felt shelf hanging off the table's
-                front-right rim, inside the tilted plane so it reads as
-                part of the table. Phones keep the controls in the hand
-                tray instead (no room under the board). */}
-            {!isMobile && (
-              <div style={{
-                position: 'absolute',
-                right: -26,
-                top: '100%',
-                marginTop: 34,
-                zIndex: 2,
-              }}>
-                <BoardControls
-                  variant="table"
-                  isMyTurn={isMyTurn}
-                  busy={isMyTurn && (!!combatPlan || G.action?.state === 'begin' || queuedEndRef.current)}
-                  hasPending={!!pending}
-                  autoPlay={autoPlay}
-                  onEnd={() => { setPending(null); triggerEndTurn(); }}
-                  onCancel={() => setPending(null)}
-                  onToggleAuto={() => setAutoPlay((v) => !v)}
-                />
-              </div>
-            )}
           </div>
           </div>
 
@@ -743,6 +733,31 @@ export function Board(props: BoardProps<GameState>) {
             />
           </div>
         </div>
+
+        {/* Turn controls — pinned to the main column's bottom-right corner,
+            OUTSIDE the scaled stage so they keep a constant, comfortable
+            size at any window size and can never collide with the hand fan
+            or hide under the side panel. Phones keep the controls in the
+            hand tray instead. */}
+        {!isMobile && (
+          <div style={{
+            position: 'absolute',
+            right: 18,
+            bottom: 14,
+            zIndex: 40,
+          }}>
+            <BoardControls
+              variant="table"
+              isMyTurn={isMyTurn}
+              busy={isMyTurn && (!!combatPlan || G.action?.state === 'begin' || queuedEndRef.current)}
+              hasPending={!!pending}
+              autoPlay={autoPlay}
+              onEnd={() => { setPending(null); triggerEndTurn(); }}
+              onCancel={() => setPending(null)}
+              onToggleAuto={() => setAutoPlay((v) => !v)}
+            />
+          </div>
+        )}
         </div>
 
         {/* PANEL DRAWER — slides in from the right edge, toggled by a thin

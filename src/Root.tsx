@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { App } from './App';
 import { StartScreen } from './ui/start/StartScreen';
@@ -13,6 +13,7 @@ import { getPreferredHeroes, getSelectedDeck } from './storage/playerData';
 import type { StoryRun, StoryNode } from './story/types';
 import { loadRun, saveRun, clearNode, setMatchExitHandler } from './story/storyRun';
 import { buildStoryMatch } from './story/content';
+import { MatchNavContext, type MatchNav } from './ui/hooks/matchNav';
 
 type View =
   | { screen: 'start' }
@@ -128,8 +129,16 @@ export function Root() {
     view.screen === 'match' ? (getMatchConfig().story ? 'Concede · Back to Map' : 'Concede Match') :
     'Back to Title';
 
+  // In-match navigation (end screen's Rematch / Main Menu). Provided via
+  // context because Board sits under boardgame.io's Client and can't take
+  // props from here.
+  const matchNav: MatchNav = useMemo(
+    () => ({ rematch: goMatch, exitToMenu: goStart }),
+    [goMatch, goStart],
+  );
+
   return (
-    <>
+    <MatchNavContext.Provider value={matchNav}>
       <TornEdgeDefs />
       <AnimatePresence mode="wait">
         <motion.div
@@ -183,6 +192,6 @@ export function Root() {
         onExitToMenu={systemExit}
         exitLabel={systemExitLabel}
       />
-    </>
+    </MatchNavContext.Provider>
   );
 }

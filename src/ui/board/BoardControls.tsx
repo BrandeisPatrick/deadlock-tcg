@@ -160,28 +160,29 @@ export function BoardControls({
 
   if (!onTable) {
     // Mobile hand-tray row: Auto · status · End Turn, thumb-side last.
+    // pointerEvents:auto — the tray shell above is pointer-transparent.
     return (
       <div style={{
         display: 'flex', alignItems: 'center', gap: 10,
         justifyContent: 'flex-end',
         paddingRight: 8,
+        pointerEvents: 'auto',
       }}>
         {cluster}
       </div>
     );
   }
 
-  // Desktop: a felt shelf that hangs off the table's front-right rim —
-  // same inlay material as the tabletop, mahogany edge, recessed top lip
-  // where it meets the table so the controls read as table furniture.
+  // Desktop: a felt shelf pinned to the main column's bottom-right corner —
+  // same inlay material as the tabletop, mahogany edge, so the controls
+  // still read as table furniture.
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8,
-      padding: '10px 16px 14px',
+      display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 7,
+      padding: '8px 12px 10px',
       background: 'linear-gradient(180deg, #dbc294, #d0b888 70%, #c6ad7c)',
       border: '1px solid #5a3f1c',
-      borderTop: '1px solid rgba(90, 63, 28, 0.55)',
-      borderRadius: '0 0 14px 14px',
+      borderRadius: 12,
       boxShadow: [
         'inset 0 4px 8px rgba(70, 45, 12, 0.28)',
         'inset 0 -1px 0 rgba(255, 244, 214, 0.35)',

@@ -266,14 +266,17 @@ function TeamStrips({
   oppId: PlayerID;
 }) {
   const { width } = useViewport();
-  const isMobile = width < 860;
+  // Compact slots buy room for the two strips to stay side by side well
+  // below the picker's own column-stacking threshold; only true phone
+  // widths stack the strips.
+  const stack = width < 680;
+  const compact = width < 1024;
   return (
     <div
       style={{
         display: 'grid',
-        // Two 4-slot strips side by side overflow a phone — stack them.
-        gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-        gap: isMobile ? 8 : 24,
+        gridTemplateColumns: stack ? '1fr' : '1fr 1fr',
+        gap: stack ? 8 : 24,
       }}
     >
       <PickStrip
@@ -281,12 +284,14 @@ function TeamStrips({
         picks={myPicks}
         isActive={order[currentIndex] === me}
         align="left"
+        compact={compact}
       />
       <PickStrip
         label="Opponent"
         picks={oppPicks}
         isActive={order[currentIndex] === oppId}
-        align="right"
+        align={stack ? 'left' : 'right'}
+        compact={compact}
       />
     </div>
   );
@@ -297,38 +302,42 @@ function PickStrip({
   picks,
   isActive,
   align,
+  compact = false,
 }: {
   label: string;
   picks: string[];
   isActive: boolean;
   align: 'left' | 'right';
+  compact?: boolean;
 }) {
   const slots = [0, 1, 2, 3];
   const nextSlot = picks.length;
+  const slotW = compact ? 44 : 56;
+  const slotH = compact ? 60 : 76;
   return (
     <div
       style={{
         display: 'flex',
         flexDirection: align === 'left' ? 'row' : 'row-reverse',
         alignItems: 'center',
-        gap: 12,
+        gap: compact ? 8 : 12,
       }}
     >
       <div
         style={{
-          minWidth: 96,
+          minWidth: compact ? 64 : 96,
           textAlign: align === 'left' ? 'left' : 'right',
           fontFamily: fonts.display,
           fontSize: 11,
           fontWeight: 700,
-          letterSpacing: '0.32em',
+          letterSpacing: compact ? '0.18em' : '0.32em',
           textTransform: 'uppercase',
           color: palette.accent,
         }}
       >
         {label}
       </div>
-      <div style={{ display: 'flex', gap: 8, flexDirection: align === 'left' ? 'row' : 'row-reverse' }}>
+      <div style={{ display: 'flex', gap: compact ? 6 : 8, flexDirection: align === 'left' ? 'row' : 'row-reverse' }}>
         {slots.map((s) => {
           const heroId = picks[s];
           const isActiveSlot = s === 0;
@@ -342,8 +351,8 @@ function PickStrip({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={spring.default}
                 style={{
-                  width: 56,
-                  height: 76,
+                  width: slotW,
+                  height: slotH,
                   borderRadius: 6,
                   overflow: 'hidden',
                   border: isActiveSlot
@@ -381,8 +390,8 @@ function PickStrip({
               }
               transition={{ duration: 0.3 }}
               style={{
-                width: 56,
-                height: 76,
+                width: slotW,
+                height: slotH,
                 borderRadius: 6,
                 border: `2px dashed ${palette.border}`,
                 background: 'rgba(245, 232, 204, 0.4)',
@@ -445,26 +454,30 @@ function HeroGrid({
               layout
               onMouseEnter={() => onHover(id)}
               onFocus={() => onHover(id)}
-              onClick={() => myTurn && onPick(id)}
-              disabled={!myTurn}
-              aria-label={`Draft ${data.name}`}
+              // Single click focuses the hero in the preview pane; the pane's
+              // big CTA is the one true "draft" trigger. (Instant-draft on a
+              // grid click made mis-clicks spend a pick.) Double-click keeps
+              // a fast path for players who know what they want.
+              onClick={() => onHover(id)}
+              onDoubleClick={() => myTurn && onPick(id)}
+              aria-label={`Select ${data.name}`}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8, y: -12 }}
-              whileHover={myTurn ? { y: -4 } : undefined}
-              whileTap={myTurn ? { scale: 0.96 } : undefined}
+              whileHover={{ y: -4 }}
+              whileTap={{ scale: 0.96 }}
               transition={spring.snappy}
               style={{
                 padding: 0,
                 border: 'none',
                 background: 'transparent',
-                cursor: myTurn ? 'pointer' : 'default',
+                cursor: 'pointer',
                 outline: 'none',
                 position: 'relative',
                 aspectRatio: '3 / 4',
               }}
             >
-              <HeroThumb heroId={id} focused={isFocused} interactive={myTurn} />
+              <HeroThumb heroId={id} focused={isFocused} interactive />
             </motion.button>
           );
         })}

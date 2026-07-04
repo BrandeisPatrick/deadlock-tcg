@@ -23,7 +23,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  * Recomputes on viewport resize and whenever the stage's own height changes
  * (e.g. the hand grows or shrinks).
  */
-export function useFitScale(min = 0.5) {
+export function useFitScale(min = 0.42) {
   const [scale, setScale] = useState(1);
   const containerEl = useRef<HTMLDivElement | null>(null);
   const contentEl = useRef<HTMLDivElement | null>(null);
@@ -33,10 +33,16 @@ export function useFitScale(min = 0.5) {
     const c = containerEl.current;
     const k = contentEl.current;
     if (!c || !k) return;
-    const avail = c.clientHeight;
-    const natural = k.offsetHeight; // layout height, transform-independent
-    if (!avail || !natural) return;
-    const next = Math.min(1, Math.max(min, avail / natural));
+    const availH = c.clientHeight;
+    const naturalH = k.offsetHeight; // layout size, transform-independent
+    // Width fit too: the stage is fixed-width (rows grid + painted table).
+    // The table paint, souls rail and controls shelf overhang the measured
+    // box by up to ~34px a side, so reserve slack before comparing.
+    const OVERHANG_SLACK = 76;
+    const availW = Math.max(0, c.clientWidth - OVERHANG_SLACK);
+    const naturalW = k.offsetWidth;
+    if (!availH || !naturalH || !naturalW) return;
+    const next = Math.min(1, Math.max(min, Math.min(availH / naturalH, availW / naturalW)));
     // Ignore sub-pixel jitter so we don't churn renders during animations.
     setScale((prev) => (Math.abs(prev - next) > 0.005 ? next : prev));
   }, [min]);

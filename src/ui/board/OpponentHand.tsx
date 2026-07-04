@@ -46,6 +46,9 @@ export function OpponentHand({ cards }: Props) {
       padding: '4px 0 8px',
       minHeight: CARD_H + 4,
       perspective: 1200,
+      // Purely decorative strip — never intercept clicks meant for the
+      // board rows it can overlap.
+      pointerEvents: 'none',
     }}>
       {total === 0 && (
         <div style={{ ...text.label, color: palette.textFaint, padding: '20px 0' }}>

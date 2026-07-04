@@ -33,11 +33,17 @@ export function HandTray({
   onToggleAuto: () => void;
 }) {
   const { isMobile } = useViewport();
+  // pointerEvents:none lets clicks fall through the (full-width) tray shell to
+  // whatever it overlaps — pointer-events is inherited, so interactive children
+  // (hand cards, the mobile controls row) opt back in with 'auto'.
   return (
     <div style={isMobile ? {
-      display: 'flex', flexDirection: 'column', gap: 4, paddingBottom: 8,
+      display: 'flex', flexDirection: 'column', gap: 4, paddingBottom: 8, pointerEvents: 'none',
     } : {
-      paddingBottom: 16,
+      // Right padding reserves the main column's bottom-right corner, where
+      // Board pins the turn controls — the fan centers left of it instead
+      // of sliding cards underneath the End Turn shelf.
+      paddingBottom: 16, paddingRight: 150, pointerEvents: 'none',
     }}>
       <div style={{ minWidth: 0 }}>
         <Hand

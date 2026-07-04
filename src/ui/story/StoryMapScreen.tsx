@@ -373,7 +373,7 @@ function NodeMarker({ run, node, onClick }: { run: StoryRun; node: StoryNode; on
         boxShadow: `inset 0 2px 2px rgba(255,255,255,0.45), inset 0 -3px 5px rgba(0,0,0,0.5), 0 5px 12px rgba(0,0,0,0.5)`
           // Actionable nodes get a soft colored halo + thin ring so "you are
           // here" and "you can go here" pop against the busy map at a glance.
-          + ((pulse || current) ? `, 0 0 13px 1px ${(current ? CURRENT_GOLD : accent)}88, 0 0 0 2px ${(current ? CURRENT_GOLD : accent)}55` : ''),
+          + ((pulse || current) ? `, 0 0 18px 3px ${(current ? CURRENT_GOLD : accent)}99, 0 0 0 2px ${(current ? CURRENT_GOLD : accent)}88` : ''),
       }}>
         {/* Recessed inner disc the emblem is struck into. */}
         <span style={{

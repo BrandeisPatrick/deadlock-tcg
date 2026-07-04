@@ -48,8 +48,10 @@ function cardOverlap(total: number): number {
   if (total <= 4) return 0;
   if (total <= 5) return -34;
   if (total <= 6) return -64;
-  if (total <= 7) return -88;
-  return -108;
+  if (total <= 7) return -84;
+  // Floor: keep ≥40px of every card visible (name plate + cost stay
+  // readable). -108 left 26px slivers that were unidentifiable.
+  return -94;
 }
 
 export function Hand({ cards, disabled, pending, mySouls, onTap, onLongPress, onHover, onDragEndOver, onUnaffordable }: Props) {
@@ -92,6 +94,10 @@ export function Hand({ cards, disabled, pending, mySouls, onTap, onLongPress, on
         alignItems: 'flex-end',
         minHeight: 180,
         perspective: 1400,
+        // The fan strip spans the full row width; without this it eats clicks
+        // meant for anything it overlaps (the End Turn shelf sat unreachable
+        // under it). Cards re-enable pointer events individually below.
+        pointerEvents: 'none',
       }}>
       {total === 0 && (
         <div style={{ color: palette.textFaint, fontFamily: fonts.ui, fontSize: 13, padding: 32 }}>
@@ -176,6 +182,8 @@ export function Hand({ cards, disabled, pending, mySouls, onTap, onLongPress, on
                 // feedback instead of a silent no-op.
                 if (unaffordable && !disabled) onUnaffordable?.(c, cost);
               }}
+              role="button"
+              aria-label={`${data?.name ?? c.cardId}${cost > 0 ? `, cost ${cost} souls` : ''}${unaffordable ? ' — cannot afford' : ''}`}
               title={unaffordable ? `Need ${cost} souls (have ${mySouls})` : undefined}
               style={{
                 // No CSS transition on marginLeft — the framer `layout` prop is
@@ -188,6 +196,7 @@ export function Hand({ cards, disabled, pending, mySouls, onTap, onLongPress, on
                 zIndex,
                 touchAction: 'none',
                 filter: unaffordable ? 'saturate(0.55)' : undefined,
+                pointerEvents: 'auto', // opt back in under the strip's pointerEvents:none
               }}
             >
               <CardFrame

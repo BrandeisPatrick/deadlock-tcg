@@ -1,4 +1,5 @@
 import type { StatusId } from '@/engine/types';
+import { STATUSES_BY_ID } from '@/statuses';
 import { palette, fonts } from '../tokens';
 
 const BUFFS: Set<StatusId> = new Set(['weapon_power','spirit_power','bullet_resist','spirit_resist','shield','unstoppable','healing_boost','extra_attack','casting','casting_light']);
@@ -52,7 +53,9 @@ interface Props {
 
 export function StatusIcon({ id, value, duration, size = 'normal' }: Props) {
   const color = colorFor(id);
-  const label = STATUS_LABELS[id] ?? id;
+  // Short chip label if we have one, else the registry's display title —
+  // never the raw snake_case id (a marked hero used to show "djinns_mark").
+  const label = STATUS_LABELS[id] ?? STATUSES_BY_ID[id]?.title ?? id;
   const showValue = typeof value === 'number' && (VALUE_STATUSES.has(id) || value > 1);
   const showDuration = typeof duration === 'number' && duration > 0 && duration < 99;
 

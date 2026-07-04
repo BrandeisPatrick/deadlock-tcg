@@ -2,6 +2,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { GameState } from '@/engine/types';
 import { CardFrame } from '../card/CardFrame';
 import { palette, fonts } from '../tokens';
+import { useViewport } from '../hooks/useViewport';
+
+/** Reveal hold in ms — Board's completeAction timer must match. */
+export const CARD_REVEAL_MS = 1350;
 
 /**
  * Drives the card / hero reveal animation off `G.action`. While the engine's
@@ -45,6 +49,12 @@ export function CardPlayOverlay({ cardId, caster, kind = 'play', onSkip }: {
   const isOwn = caster === 'P0';
   const accent = isOwn ? palette.accent : palette.danger;
   const verb = kind === 'skill' ? 'used' : 'played';
+  const { isMobile } = useViewport();
+  const dur = CARD_REVEAL_MS / 1000;
+  // Desktop: anchor the reveal to the left margin so the board — where the
+  // spell is about to land — stays readable behind it. Phones center it
+  // (no side margin to borrow).
+  const anchorLeft = isMobile ? '50%' : 'clamp(170px, 20vw, 330px)';
   return (
     <>
       {/* Soft backdrop tint so the card pops out from the board behind it.
@@ -52,9 +62,9 @@ export function CardPlayOverlay({ cardId, caster, kind = 'play', onSkip }: {
           the action immediately instead of waiting out the full hold. */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: [0, 0.35, 0.35, 0] }}
+        animate={{ opacity: [0, 0.22, 0.22, 0] }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 1.7, times: [0, 0.12, 0.82, 1] }}
+        transition={{ duration: dur, times: [0, 0.12, 0.82, 1] }}
         onClick={onSkip}
         style={{
           position: 'fixed', inset: 0,
@@ -64,22 +74,22 @@ export function CardPlayOverlay({ cardId, caster, kind = 'play', onSkip }: {
           zIndex: 70,
         }}
       />
-      {/* The card itself, centered, with a brief pop-in / hold / fade-out.
+      {/* The card itself, side-anchored, with a brief pop-in / hold / fade-out.
           A static outer wrapper handles centering so framer-motion's
           `transform: scale(...) translateY(...)` doesn't clobber the
           `translate(-50%, -50%)` we'd need on the same element. */}
       <div style={{
         position: 'fixed',
-        left: '50%', top: '50%',
+        left: anchorLeft, top: '50%',
         transform: 'translate(-50%, -50%)',
         pointerEvents: 'none',
         zIndex: 72,
       }}>
         <motion.div
-          initial={{ opacity: 0, scale: 0.5, y: 20, rotateY: 38 }}
+          initial={{ opacity: 0, scale: 0.45, y: 20, rotateY: 38 }}
           animate={{
             opacity: [0, 1, 1, 0],
-            scale: [0.5, 1.08, 1.0, 0.95],
+            scale: [0.45, 0.92, 0.86, 0.82],
             y: [20, 0, 0, -10],
             // Flips face-up toward the viewer as it lands — "dealt onto the
             // table" rather than just fading in.
@@ -92,8 +102,8 @@ export function CardPlayOverlay({ cardId, caster, kind = 'play', onSkip }: {
             ['--mx' as string]: ['50%', '50%', '50%', '50%'],
             ['--my' as string]: ['42%', '42%', '42%', '42%'],
           }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 1.7, times: [0, 0.12, 0.82, 1], ease: [0.22, 1, 0.36, 1] }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          transition={{ duration: dur, times: [0, 0.12, 0.82, 1], ease: [0.22, 1, 0.36, 1] }}
           style={{
             transformPerspective: 1100,
             filter: `drop-shadow(0 16px 36px rgba(0,0,0,0.55)) drop-shadow(0 0 22px ${accent}88)`,
@@ -106,11 +116,12 @@ export function CardPlayOverlay({ cardId, caster, kind = 'play', onSkip }: {
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: [0, 1, 1, 0], y: [-8, 0, 0, -8] }}
-        transition={{ duration: 1.7, times: [0, 0.12, 0.82, 1] }}
+        transition={{ duration: dur, times: [0, 0.12, 0.82, 1] }}
         style={{
           position: 'fixed',
-          left: 0, right: 0,
-          top: 'calc(50% - 250px)',
+          left: anchorLeft,
+          transform: 'translateX(-50%)',
+          top: 'calc(50% - 218px)',
           textAlign: 'center',
           pointerEvents: 'none',
           zIndex: 73,
@@ -127,6 +138,7 @@ export function CardPlayOverlay({ cardId, caster, kind = 'play', onSkip }: {
           color: '#fff',
           textShadow: `0 1px 2px rgba(0,0,0,0.9)`,
           boxShadow: `0 4px 14px rgba(0,0,0,0.5), 0 0 18px ${accent}66`,
+          whiteSpace: 'nowrap',
         }}>
           {isOwn ? `You ${verb}` : `Rival ${verb}`}
         </span>
@@ -138,11 +150,12 @@ export function CardPlayOverlay({ cardId, caster, kind = 'play', onSkip }: {
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.7 }}
           exit={{ opacity: 0 }}
-          transition={{ delay: 0.7, duration: 0.4 }}
+          transition={{ delay: 0.6, duration: 0.35 }}
           style={{
             position: 'fixed',
-            left: 0, right: 0,
-            top: 'calc(50% + 240px)',
+            left: anchorLeft,
+            transform: 'translateX(-50%)',
+            top: 'calc(50% + 200px)',
             textAlign: 'center',
             pointerEvents: 'none',
             zIndex: 73,
@@ -150,6 +163,7 @@ export function CardPlayOverlay({ cardId, caster, kind = 'play', onSkip }: {
             fontSize: 12, fontWeight: 700,
             color: '#fff',
             textShadow: '0 1px 3px rgba(0,0,0,0.9)',
+            whiteSpace: 'nowrap',
           }}
         >
           Tap anywhere to continue

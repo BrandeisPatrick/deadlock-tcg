@@ -82,10 +82,19 @@ export function TornTile({
   };
 
   // The clipped element. All visible parchment, art, and labels sit inside.
+  // A real <button> (not div role="button") — native activation semantics
+  // survive synthesized clicks and assistive tech better.
   const clippedStyle: CSSProperties = {
     position: 'relative',
+    display: 'block',
     width: '100%',
     height: '100%',
+    padding: 0,
+    margin: 0,
+    border: 'none',
+    font: 'inherit',
+    textAlign: 'left' as const,
+    color: 'inherit',
     clipPath: CLIP_BY_VARIANT[variant],
     WebkitClipPath: CLIP_BY_VARIANT[variant],
     background: palette.bg2,
@@ -108,20 +117,12 @@ export function TornTile({
         whileTap={interactive ? { scale: 0.99 } : undefined}
         transition={spring.snappy}
       >
-        <div
+        <button
+          type="button"
           style={clippedStyle}
           onClick={interactive ? onClick : undefined}
-          role={interactive ? 'button' : undefined}
-          aria-disabled={disabled || comingSoon}
+          disabled={!interactive}
           aria-label={ariaLabel ?? title}
-          tabIndex={interactive ? 0 : -1}
-          onKeyDown={(e) => {
-            if (!interactive) return;
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              onClick?.();
-            }
-          }}
         >
           {/* Sepia inset edge — sits above the parchment fill, below content */}
           <div
@@ -313,7 +314,7 @@ export function TornTile({
               </div>
             )}
           </div>
-        </div>
+        </button>
       </motion.div>
     </motion.div>
   );

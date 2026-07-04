@@ -213,7 +213,10 @@ export function enumerateAIMoves(G: GameState, ctx: Ctx, lookahead = true): Move
   // If our Active is a corpse and we have an alive bench hero, the ONLY legal
   // move is to promote — return immediately so the AI doesn't try to play cards
   // through a dead Active.
-  const activeIsCorpse = !!ps.active && (ps.active.respawnTurnsLeft ?? 0) > 0;
+  // Gate on the engine's pendingPromotion flag (set by `resolve`) — a corpse
+  // Active alone isn't enough (e.g. promotion already owed to the other seat),
+  // and dispatching promoteToActive outside that window is an invalid move.
+  const activeIsCorpse = !!ps.active && (ps.active.respawnTurnsLeft ?? 0) > 0 && G.pendingPromotion === pid;
   if (activeIsCorpse) {
     for (let i = 0; i < ps.bench.length; i++) {
       const b = ps.bench[i];
