@@ -21,16 +21,22 @@ const TARGET_LABELS: Record<TargetFilter, string> = {
 };
 
 export function TargetingOverlay({ title, desc, filter, onCancel }: Props) {
+  // Anchor the banner AWAY from the rows it asks the player to tap: ally
+  // targeting docks under the rival's hand (your rows stay clear), enemy
+  // targeting docks above your hand (the rival's rows stay clear).
+  const anchorTop = filter === 'allyAny' || filter === 'allyHero' || filter === 'self';
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.96 }}
+      initial={{ opacity: 0, y: anchorTop ? -20 : 20, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 10, scale: 0.96 }}
+      exit={{ opacity: 0, y: anchorTop ? -10 : 10, scale: 0.96 }}
       transition={spring.snappy}
       style={{
         position: 'fixed',
         left: 16, right: 16,
-        bottom: 'calc(220px + env(safe-area-inset-bottom))',
+        ...(anchorTop
+          ? { top: 76 }
+          : { bottom: 'calc(220px + env(safe-area-inset-bottom))' }),
         maxWidth: 520,
         margin: '0 auto',
         background: palette.bg1,

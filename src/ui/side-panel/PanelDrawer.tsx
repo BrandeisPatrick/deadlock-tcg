@@ -63,7 +63,9 @@ export function PanelDrawer({ open, onToggle, children }: {
               position: 'fixed',
               top: 0, right: 0, bottom: 0,
               width: WIDTH,
-              padding: '12px 12px 12px 8px',
+              // Top padding clears the persistent system gear pinned to the
+              // viewport corner so the panel header never sits under it.
+              padding: '56px 12px 12px 8px',
               background: palette.bg0,
               boxShadow: `-8px 0 24px rgba(40, 20, 0, 0.32)`,
               zIndex: 64,
