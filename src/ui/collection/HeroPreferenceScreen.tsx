@@ -86,7 +86,7 @@ export function HeroPreferenceScreen({ onBack }: Props) {
             : 'repeat(auto-fill, minmax(110px, 1fr))',
           gap: isMobile ? 8 : 12,
         }}>
-          {HEROES.map((hero) => {
+          {[...HEROES].sort((a, b) => a.name.localeCompare(b.name)).map((hero) => {
             const isSelected = selected.has(hero.id);
             const identity = getHeroIdentity(hero.id);
             return (

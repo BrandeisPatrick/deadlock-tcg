@@ -209,19 +209,24 @@ export function RoundCardIcon({ cardId, size = 130, selected = false, showName =
           pointerEvents: 'none',
         }} />
 
-        {/* Type badge at bottom of circle */}
-        <div style={{
-          position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)',
-          padding: '2px 10px', borderRadius: 10,
-          background: `${tint.ribbon}dd`,
-          border: '1px solid rgba(0,0,0,0.3)',
-          fontSize: 10, fontWeight: 700, color: '#fff',
-          fontFamily: fonts.ui, letterSpacing: 0.5,
-          whiteSpace: 'nowrap',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
-        }}>
-          {typeLabel}
-        </div>
+        {/* Type badge at bottom of circle — gallery sizes only. On the small
+            inline-row icons (28–40px) the pill is wider than the circle and
+            the circular clip truncated it to "Spel"; those rows print the
+            type as text beside the icon anyway. */}
+        {size >= 64 && (
+          <div style={{
+            position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)',
+            padding: '2px 10px', borderRadius: 10,
+            background: `${tint.ribbon}dd`,
+            border: '1px solid rgba(0,0,0,0.3)',
+            fontSize: 10, fontWeight: 700, color: '#fff',
+            fontFamily: fonts.ui, letterSpacing: 0.5,
+            whiteSpace: 'nowrap',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
+          }}>
+            {typeLabel}
+          </div>
+        )}
 
         {/* Rarity foil — circular clip inherited from the container */}
         <RarityFX rarity={rarity} seed={cardId} />

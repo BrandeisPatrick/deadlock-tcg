@@ -82,8 +82,11 @@ export function HeroDetailSheet({
   const stripHero = (n: string) => (n.startsWith(`${data.name} `) ? n.slice(data.name.length + 1) : n);
   const skillName = skillAbility ? stripHero(extractAbilityName(skillAbility.prompt) ?? data.name) : '';
   const passiveName = passiveAbility ? stripHero(extractAbilityName(passiveAbility.prompt) ?? `${data.name}'s Passive`) : '';
-  const skillDesc = skillAbility ? (extractAbilityDesc(skillAbility.prompt) ?? skillAbility.prompt ?? '') : '';
-  const passiveDesc = passiveAbility ? (extractAbilityDesc(passiveAbility.prompt) ?? passiveAbility.prompt ?? data.text ?? '') : '';
+  // Ability prompts read "Hero Name — trigger: effect." — the extracted desc
+  // fragment starts lowercase; sentence-case it for the panel.
+  const sentence = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+  const skillDesc = sentence(skillAbility ? (extractAbilityDesc(skillAbility.prompt) ?? skillAbility.prompt ?? '') : '');
+  const passiveDesc = sentence(passiveAbility ? (extractAbilityDesc(passiveAbility.prompt) ?? passiveAbility.prompt ?? data.text ?? '') : '');
 
   // Phones can't fit the 340 card + 280 rail side by side (634px), so the
   // card+rail row stacks vertically and the card itself shrinks a touch.

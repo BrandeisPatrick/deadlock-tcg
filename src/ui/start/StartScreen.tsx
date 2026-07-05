@@ -477,7 +477,7 @@ function Footer() {
           opacity: 0.75,
         }}
       >
-        v0.1 · build
+        v0.1 · early prototype
       </div>
     </motion.div>
   );

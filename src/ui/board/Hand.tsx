@@ -177,6 +177,11 @@ export function Hand({ cards, disabled, pending, mySouls, onTap, onLongPress, on
               }}
               onPointerUp={() => clearPress(c.iid)}
               onClick={() => {
+                // Cancel any pending hover-preview timer: with a ~350ms fuse it
+                // fires AFTER the tap arms targeting and parks a full-size
+                // preview over the very targets being picked.
+                clearHover(c.iid);
+                if (currentHover.current === c.iid) closePreview();
                 if (!cardDisabled) { onTap(c); return; }
                 // Tapping an unaffordable card on your own turn gets explicit
                 // feedback instead of a silent no-op.

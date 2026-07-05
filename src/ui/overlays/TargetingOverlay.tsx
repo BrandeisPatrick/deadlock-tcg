@@ -35,66 +35,71 @@ export function TargetingOverlay({ title, desc, filter, onCancel }: Props) {
         position: 'fixed',
         left: 16, right: 16,
         ...(anchorTop
-          ? { top: 76 }
+          ? { top: 14 }
           : { bottom: 'calc(220px + env(safe-area-inset-bottom))' }),
-        maxWidth: 520,
+        // Single-line strip: the old three-row card was ~110px tall and
+        // buried a whole board row (including rows that can hold targets).
+        maxWidth: 680,
+        width: 'fit-content',
         margin: '0 auto',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
         background: palette.bg1,
         border: `2px solid ${palette.success}`,
-        borderRadius: 12,
-        padding: '12px 14px',
+        borderRadius: 999,
+        padding: '7px 8px 7px 8px',
         boxShadow: `0 10px 26px rgba(40, 20, 0, 0.32), 0 0 22px ${palette.success}55`,
         zIndex: 50,
       }}
     >
-      {/* Row 1: target-type pill + cancel */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        marginBottom: 8,
+      <span style={{
+        flexShrink: 0,
+        display: 'inline-flex', alignItems: 'center', gap: 7,
+        padding: '4px 10px',
+        background: `${palette.success}22`,
+        border: `1px solid ${palette.success}66`,
+        borderRadius: 999,
+        ...text.label, color: palette.success,
+        whiteSpace: 'nowrap',
       }}>
-        <span style={{
-          display: 'inline-flex', alignItems: 'center', gap: 8,
-          padding: '4px 10px',
-          background: `${palette.success}22`,
-          border: `1px solid ${palette.success}66`,
-          borderRadius: 999,
-          ...text.label, color: palette.success,
-        }}>
-          <span aria-hidden>◎</span>
-          <span>{TARGET_LABELS[filter]}</span>
-        </span>
+        <span aria-hidden>◎</span>
+        <span>{TARGET_LABELS[filter]}</span>
+      </span>
 
-        <motion.button
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.94 }}
-          onClick={onCancel}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: '6px 12px',
-            background: `${palette.danger}18`,
-            border: `1px solid ${palette.danger}88`,
-            borderRadius: 6,
-            cursor: 'pointer',
-            ...text.label, color: palette.danger,
-          }}
-        >
-          <span aria-hidden>✕</span>
-          <span>Cancel</span>
-        </motion.button>
-      </div>
-
-      {/* Row 2: title + description */}
-      <div style={{ ...text.label, color: palette.text }}>{title}</div>
-      <div style={{ marginTop: 3, ...text.body, color: palette.textDim }}>{desc}</div>
-
-      {/* Row 3: drag hint */}
-      <div style={{
-        marginTop: 8, paddingTop: 8,
-        borderTop: `1px dashed ${palette.border}`,
-        ...text.body, color: palette.textFaint,
+      <span style={{
+        minWidth: 0,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        ...text.body,
+        color: palette.textDim,
       }}>
-        Tap a glowing target — or drag onto it.
-      </div>
+        <span style={{ ...text.label, color: palette.text }}>{title}</span>
+        {desc ? <> — {desc}</> : null}
+        <span style={{ color: palette.textFaint }}> · tap or drag onto a glowing target</span>
+      </span>
+
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.94 }}
+        onClick={onCancel}
+        aria-label="Cancel"
+        title="Cancel"
+        style={{
+          flexShrink: 0,
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          width: 28, height: 28,
+          background: `${palette.danger}18`,
+          border: `1px solid ${palette.danger}88`,
+          borderRadius: '50%',
+          cursor: 'pointer',
+          ...text.label, color: palette.danger,
+          lineHeight: 1,
+        }}
+      >
+        ✕
+      </motion.button>
     </motion.div>
   );
 }

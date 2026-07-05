@@ -41,8 +41,18 @@ function glyph(kind: string): ReactNode {
   return kind;
 }
 
+/** The engine logs seats as "P0"/"P1" — render them as words. Mid-sentence
+ *  occurrences read fine too ("…damage to Rival."). */
+function humanize(t: string): string {
+  return t
+    .replace(/\bP0\b/g, 'You')
+    .replace(/\bP1\b/g, 'Rival')
+    .replace(/\bplayer 0\b/g, 'You')
+    .replace(/\bplayer 1\b/g, 'Rival');
+}
+
 export function LogLine({ text }: { text: string }) {
-  const parts = text.split(PATTERN);
+  const parts = humanize(text).split(PATTERN);
   return (
     <>
       {parts.map((p, i) => {

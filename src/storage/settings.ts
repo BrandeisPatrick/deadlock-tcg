@@ -18,11 +18,18 @@ const listeners = new Set<() => void>();
 
 export function getSettings(): AppSettings {
   if (!cache) {
+    let loaded: AppSettings;
     try {
-      cache = { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') };
+      loaded = { ...DEFAULTS, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') };
     } catch {
-      cache = { ...DEFAULTS };
+      loaded = { ...DEFAULTS };
     }
+    // Sanitize persisted values — combatSpeed divides the combat beat timer,
+    // so a stale/foreign value (e.g. a legacy "slow" string) would NaN the
+    // step duration and make combat resolve with no visible beats.
+    const speed = Number(loaded.combatSpeed);
+    loaded.combatSpeed = (speed === 1 || speed === 1.5 || speed === 2 ? speed : DEFAULTS.combatSpeed) as AppSettings['combatSpeed'];
+    cache = loaded;
   }
   return cache!;
 }

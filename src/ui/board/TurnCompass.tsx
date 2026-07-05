@@ -45,6 +45,12 @@ if (typeof CSS !== 'undefined' && typeof (CSS as any).registerProperty === 'func
  * This component is the single mid-board focal token; combat does NOT
  * introduce any sibling chrome.
  */
+// Orb diameter. The duel divider column is ~180px of open felt — at the old
+// 36px the compass read as a stray dot rather than the board's focal token.
+const SIZE = 54;
+// Ring mask hole tracks the orb radius (ring layers sit at inset -3).
+const RING_MASK = `radial-gradient(circle, transparent ${SIZE / 2 - 3}px, #000 ${SIZE / 2 - 2}px)`;
+
 export function TurnCompass({ isMyTurn, turn, combatOverride }: Props) {
   const contextCombat = useCombatProgress();
   const combat = combatOverride !== undefined ? combatOverride : contextCombat;
@@ -80,8 +86,8 @@ export function TurnCompass({ isMyTurn, turn, combatOverride }: Props) {
       style={{
         position: 'relative',
         zIndex: 2,
-        width: 36,
-        height: 36,
+        width: SIZE,
+        height: SIZE,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -132,20 +138,39 @@ export function TurnCompass({ isMyTurn, turn, combatOverride }: Props) {
         )}
       </AnimatePresence>
 
-      {/* Centred turn numeral — the only piece of glanceable info inside
-          the orb. Stays static so it's always readable in a single beat
-          (also during combat — beat progress lives in the ring). */}
+      {/* Centred turn readout — micro "TURN" caption over the numeral. Stays
+          static so it's always readable in a single beat (also during
+          combat — beat progress lives in the ring). */}
       <span style={{
         position: 'relative',
-        fontFamily: fonts.ui,
-        fontSize: 13,
-        fontWeight: 700,
-        lineHeight: 1,
-        color: palette.text,
-        fontVariantNumeric: 'tabular-nums',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 1,
         zIndex: 1,
       }}>
-        {turn}
+        <span style={{
+          fontFamily: fonts.display,
+          fontSize: 7,
+          fontWeight: 700,
+          letterSpacing: '0.34em',
+          paddingLeft: '0.34em', // optically recenters tracked-out caps
+          textTransform: 'uppercase',
+          color: palette.textDim,
+          lineHeight: 1,
+        }}>
+          Turn
+        </span>
+        <span style={{
+          fontFamily: fonts.ui,
+          fontSize: 19,
+          fontWeight: 700,
+          lineHeight: 1,
+          color: palette.text,
+          fontVariantNumeric: 'tabular-nums',
+        }}>
+          {turn}
+        </span>
       </span>
 
       {/* External chevron — sits OUTSIDE the orb's edge and points at the
@@ -155,7 +180,7 @@ export function TurnCompass({ isMyTurn, turn, combatOverride }: Props) {
           to below (you) on turn change. */}
       <motion.div
         aria-hidden
-        animate={{ top: isMyTurn ? 38 : -8 }}
+        animate={{ top: isMyTurn ? SIZE + 2 : -8 }}
         transition={spring.snappy}
         style={{
           position: 'absolute',
@@ -207,8 +232,8 @@ function IdleSweepRing({ hue }: { hue: string }) {
           ${hue}cc 10deg,
           transparent 50deg,
           transparent 360deg)`,
-        WebkitMask: 'radial-gradient(circle, transparent 15px, #000 16px)',
-        mask: 'radial-gradient(circle, transparent 15px, #000 16px)',
+        WebkitMask: RING_MASK,
+        mask: RING_MASK,
         pointerEvents: 'none',
       }}
     />
@@ -244,7 +269,7 @@ function CombatRing({ combat }: { combat: NonNullable<CombatProgress> }) {
     ${hue} ${activeA0}deg ${activeA1}deg,
     transparent ${activeA1}deg 360deg)`;
 
-  const ringMask = 'radial-gradient(circle, transparent 15px, #000 16px)';
+  const ringMask = RING_MASK;
 
   return (
     <>

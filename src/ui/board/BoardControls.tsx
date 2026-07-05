@@ -30,7 +30,9 @@ export function BoardControls({
       ? { key: 'busy', label: 'Resolving…', tone: palette.accent, pulse: true }
       : autoPlay
         ? { key: 'auto', label: 'Auto-play on', tone: palette.success, pulse: false }
-        : null;
+        // Idle on the player's turn: say so — the empty slot read as a
+        // half-finished panel and the state was only implied by button color.
+        : { key: 'yours', label: 'Your move', tone: palette.accent, pulse: false };
   const endTurnHot = isMyTurn && !busy;
   const onTable = variant === 'table';
 

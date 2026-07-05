@@ -223,9 +223,10 @@ export function Board(props: BoardProps<GameState>) {
   }, [combatPlan, G.action?.state, ctx.currentPlayer, ctx.gameover, me, triggerEndTurn]);
 
   // Targeting needs the board visible — close any hover/long-press preview the
-  // moment a pending action arms, so the big card preview never sits on top of
-  // the very targets the player is being asked to pick.
-  useEffect(() => { if (pending) setPreview(null); }, [pending]);
+  // moment a pending action arms, AND any that opens mid-targeting (a hover
+  // timer armed before the tap can fire after it), so the big card preview
+  // never sits on top of the very targets the player is being asked to pick.
+  useEffect(() => { if (pending && preview) setPreview(null); }, [pending, preview]);
 
   // Safety net: if the previewed card (hand or attached equipment) is no longer present, drop the preview.
   useEffect(() => {

@@ -54,10 +54,10 @@ export function SoulsRail({ rivalSouls, yourSouls }: Props) {
         position: 'absolute',
         // Hug the right edge of the board grid so the racks read as
         // fixtures on the battlefield, not an off-board chrome strip.
-        right: isMobile ? -4 : -14,
+        right: isMobile ? -4 : -18,
         top: 0,
         bottom: 0,
-        width: 30,
+        width: isMobile ? 30 : 38,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -94,7 +94,9 @@ function Rack({ filled, slots, side, mobile }: {
   side: 'rival' | 'you';
   mobile: boolean;
 }) {
-  const coin = mobile ? 10 : 12;
+  // Souls gate every play — at 12px the rack was nearly invisible fixture
+  // noise. 15px coins + a bigger engraved count keep it glanceable.
+  const coin = mobile ? 10 : 15;
   // Always show at least 3 sockets so the fixture reads as a coin rack
   // even before the economy spins up; clamp to CAP and show a "+N"
   // overflow tail for any souls past it. Cap is a soft guard — V1
@@ -111,8 +113,8 @@ function Rack({ filled, slots, side, mobile }: {
       display: 'flex',
       flexDirection: side === 'rival' ? 'column' : 'column-reverse',
       alignItems: 'center',
-      gap: 3,
-      padding: '6px 4px',
+      gap: mobile ? 3 : 4,
+      padding: mobile ? '6px 4px' : '7px 5px',
       borderRadius: 999,
       // Recessed channel — same carve treatment as the row wells.
       background: 'linear-gradient(180deg, rgba(84, 58, 22, 0.15), rgba(84, 58, 22, 0.08))',
@@ -125,11 +127,11 @@ function Rack({ filled, slots, side, mobile }: {
       {/* Engraved count — the at-a-glance readout at the anchor end. */}
       <span style={{
         fontFamily: fonts.ui,
-        fontSize: mobile ? 11 : 13,
-        fontWeight: 700,
+        fontSize: mobile ? 11 : 15,
+        fontWeight: 800,
         lineHeight: 1,
         fontVariantNumeric: 'tabular-nums',
-        color: '#6b4716',
+        color: '#5a3a10',
         textShadow: '0 1px 0 rgba(255, 244, 214, 0.55)',
         padding: '1px 0 2px',
       }}>

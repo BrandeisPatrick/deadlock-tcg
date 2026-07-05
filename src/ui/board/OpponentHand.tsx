@@ -82,14 +82,19 @@ export function OpponentHand({ cards }: Props) {
         })}
       </AnimatePresence>
       {total > 0 && (
+        // Inline chip beside the fan — the old absolutely-positioned counter
+        // floated in dead space once the stage stopped spanning the viewport.
         <span style={{
-          // right offset keeps the count clear of the persistent system
-          // gear when the board column runs to the viewport edge (mobile).
-          position: 'absolute', right: 56, top: '50%', transform: 'translateY(-50%)',
+          alignSelf: 'center',
+          marginLeft: 14,
           display: 'inline-flex', alignItems: 'baseline', gap: 6,
+          padding: '4px 10px',
+          borderRadius: 999,
+          background: 'rgba(58, 40, 16, 0.08)',
+          border: '1px solid rgba(90, 63, 28, 0.28)',
         }}>
-          <span style={{ ...text.label, color: palette.textDim }}>Hand</span>
-          <span style={{ ...text.numeric, fontSize: 16, color: palette.text }}>{total}</span>
+          <span style={{ ...text.label, fontSize: 11, color: palette.textDim }}>Hand</span>
+          <span style={{ ...text.numeric, fontSize: 15, color: palette.text }}>{total}</span>
         </span>
       )}
     </div>
