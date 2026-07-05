@@ -62,7 +62,7 @@ export function PreviewGallery() {
         </h1>
         <p style={{ color: palette.textDim, marginTop: 6 }}>
           Visual catalog of every in-game render.&nbsp;
-          <a href="/" style={{ color: palette.accent }}>back to match</a>
+          <a href={import.meta.env.BASE_URL ?? '/'} style={{ color: palette.accent }}>back to match</a>
         </p>
       </header>
 
