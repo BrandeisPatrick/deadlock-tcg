@@ -40,10 +40,7 @@ export function HandTray({
     <div style={isMobile ? {
       display: 'flex', flexDirection: 'column', gap: 4, paddingBottom: 8, pointerEvents: 'none',
     } : {
-      // Right padding reserves the main column's bottom-right corner, where
-      // Board pins the turn controls — the fan centers left of it instead
-      // of sliding cards underneath the End Turn shelf.
-      paddingBottom: 16, paddingRight: 150, pointerEvents: 'none',
+      paddingBottom: 16, pointerEvents: 'none',
     }}>
       <div style={{ minWidth: 0 }}>
         <Hand

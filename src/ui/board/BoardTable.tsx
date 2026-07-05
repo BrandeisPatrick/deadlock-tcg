@@ -33,6 +33,27 @@ const mat = {
   brass: palette.accent,
 } as const;
 
+// Procedural material textures — inline SVG turbulence, so the table gets
+// real wood figure and felt tooth without shipping bitmap assets. Each is a
+// tiling data-URI layered over the base gradients.
+//
+// Wood: noise stretched hard along X reads as long grain; two layers (dark
+// pores + faint light figure on a different seed) give it depth.
+const WOOD_DARK = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.16' numOctaves='5' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.10  0 0 0 0 0.055  0 0 0 0 0.015  0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='420' height='140' filter='url(%23g)'/%3E%3C/svg%3E")`;
+const WOOD_LIGHT = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.009 0.11' numOctaves='4' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.95  0 0 0 0 0.78  0 0 0 0 0.48  0 0 0 0.16 0'/%3E%3C/filter%3E%3Crect width='420' height='140' filter='url(%23g)'/%3E%3C/svg%3E")`;
+// Felt: fine, even tooth — high-frequency noise at low alpha.
+const FELT_TOOTH = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='2' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.32  0 0 0 0 0.20  0 0 0 0 0.06  0 0 0 0.085 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23f)'/%3E%3C/svg%3E")`;
+
+/** Layered wood surface — grain textures over the mahogany ramp. */
+const woodSurface = (angle: number) => ({
+  backgroundImage: [
+    WOOD_DARK,
+    WOOD_LIGHT,
+    `linear-gradient(${angle}deg, ${mat.rim0}, ${mat.rim1} 70%)`,
+  ].join(', '),
+  backgroundSize: '420px 140px, 380px 120px, 100% 100%',
+});
+
 /**
  * The tabletop: a mahogany-rimmed, felt-inlaid surface with one recessed
  * well per board row (rival bench / lane / your bench) and an engraved
@@ -54,34 +75,43 @@ export function BoardTable({ isMobile }: { isMobile: boolean }) {
         pointerEvents: 'none',
       }}
     >
-      {/* Rim — mahogany frame with a warm top highlight and a heavy drop
-          shadow that anchors the table above the parlor floor. */}
+      {/* Rim — mahogany frame with real grain figure, a warm top highlight
+          and a heavy drop shadow that anchors the table above the floor. */}
       <div style={{
         position: 'absolute',
         inset: 0,
         borderRadius: 20,
-        background: `linear-gradient(180deg, ${mat.rim0}, ${mat.rim1} 70%)`,
+        ...woodSurface(180),
         border: `1px solid ${mat.rimEdge}`,
         boxShadow: [
-          '0 34px 64px -20px rgba(40, 20, 0, 0.55)',
-          '0 12px 26px rgba(40, 20, 0, 0.28)',
-          'inset 0 1px 0 rgba(255, 226, 170, 0.35)',
-          'inset 0 -2px 0 rgba(0, 0, 0, 0.4)',
+          '0 44px 84px -24px rgba(40, 20, 0, 0.6)',
+          '0 14px 30px rgba(40, 20, 0, 0.3)',
+          'inset 0 2px 1px rgba(255, 226, 170, 0.38)',
+          'inset 0 -3px 2px rgba(0, 0, 0, 0.45)',
+          'inset 2px 0 2px -1px rgba(255, 226, 170, 0.14)',
+          'inset -2px 0 2px -1px rgba(0, 0, 0, 0.3)',
         ].join(', '),
       }} />
 
-      {/* Front edge — a darker strip protruding under the bottom rim; with
-          the plane tilted it reads as the thickness of the tabletop. */}
+      {/* Front edge — the tabletop's visible thickness under the tilted
+          plane: end-grain wood catching a sliver of light along its lip. */}
       <div style={{
         position: 'absolute',
         top: '100%',
         left: 8,
         right: 8,
-        height: isMobile ? 8 : 13,
+        height: isMobile ? 9 : 16,
         marginTop: -3,
         borderRadius: '0 0 16px 16px',
-        background: 'linear-gradient(180deg, #33220d, #1a1106)',
-        boxShadow: '0 10px 20px rgba(40, 20, 0, 0.4)',
+        backgroundImage: [
+          WOOD_DARK,
+          'linear-gradient(180deg, #3d2910, #241706 60%, #160e04)',
+        ].join(', '),
+        backgroundSize: '420px 140px, 100% 100%',
+        boxShadow: [
+          'inset 0 1px 0 rgba(255, 226, 170, 0.22)',
+          '0 12px 24px rgba(40, 20, 0, 0.45)',
+        ].join(', '),
       }} />
 
       {/* Corner rivets — brass pins in the rim. */}
@@ -107,19 +137,25 @@ export function BoardTable({ isMobile }: { isMobile: boolean }) {
         borderRadius: 12,
         background: `linear-gradient(180deg, ${mat.inlay0}, ${mat.inlay1})`,
         boxShadow: [
-          'inset 0 4px 14px rgba(70, 45, 12, 0.38)',
+          'inset 0 5px 16px rgba(70, 45, 12, 0.42)',
           'inset 0 -1px 0 rgba(255, 244, 214, 0.4)',
         ].join(', '),
         overflow: 'hidden',
       }}>
-        {/* Cloth weave — two crossed hairline grids, barely-there. */}
+        {/* Felt tooth — fine organic noise (the old crossed hairline grids
+            aliased into a cheap dot lattice on fractional-DPR screens). */}
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: [
-            'repeating-linear-gradient(0deg, rgba(120, 80, 30, 0.05) 0 1px, transparent 1px 3px)',
-            'repeating-linear-gradient(90deg, rgba(120, 80, 30, 0.04) 0 1px, transparent 1px 3px)',
-          ].join(', '),
+          backgroundImage: FELT_TOOTH,
+          backgroundSize: '240px 240px',
+        }} />
+        {/* Directional light — the tilted plane recedes, so the far edge
+            sits in shade and the near lip catches the room light. */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(180deg, rgba(60, 38, 12, 0.14), transparent 26%, transparent 74%, rgba(255, 246, 214, 0.16) 100%)',
         }} />
         {/* Engraved keyline just inside the rim. */}
         <div style={{
@@ -129,11 +165,13 @@ export function BoardTable({ isMobile }: { isMobile: boolean }) {
           border: '1px solid rgba(120, 80, 30, 0.32)',
           boxShadow: 'inset 0 1px 0 rgba(255, 244, 214, 0.35)',
         }} />
-        {/* Warm light pool at the lane so the duel stays the bright spot. */}
+        {/* Warm light pool at the lane so the duel stays the bright spot.
+            Long multi-stop falloff — a short fade banded visibly (a crisp
+            ellipse rim) over the felt noise. */}
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'radial-gradient(ellipse 65% 42% at 50% 50%, rgba(255, 240, 200, 0.4), transparent 75%)',
+          background: 'radial-gradient(ellipse 70% 48% at 50% 50%, rgba(255, 240, 200, 0.32), rgba(255, 240, 200, 0.18) 45%, rgba(255, 240, 200, 0.07) 68%, transparent 92%)',
         }} />
       </div>
 

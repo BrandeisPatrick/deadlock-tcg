@@ -645,10 +645,11 @@ export function Board(props: BoardProps<GameState>) {
             display: 'flex',
             flexDirection: 'column',
             gap: boardRows.gap(isMobile),
-            // Left gutter rail: the row nameplates ("Rival · Bench" / "Lane")
-            // live here beside the cards. Without it the fit-content stage
-            // hugs the card grid and the plaques sat on the first column.
+            // Gutter rails: row nameplates live in the left rail; the turn
+            // control dock is carved into the right rail. Without them the
+            // fit-content stage hugs the card grid and both sat on cards.
             paddingLeft: isMobile ? 0 : 76,
+            paddingRight: isMobile ? 0 : 150,
             // translateZ(0) on mobile keeps a stacking context so the
             // table layer can never paint over the rows on either branch.
             transform: isMobile ? 'translateZ(0)' : 'rotateX(9deg)',
@@ -714,6 +715,35 @@ export function Board(props: BoardProps<GameState>) {
               yourSouls={G.players[me].souls}
             />
 
+            {/* Turn control dock — carved into the table's right rail,
+                centred on the lane like a console screwed to the rim. Lives
+                inside the tilted plane so it reads as part of the board.
+                Phones keep the controls in the hand tray instead. */}
+            {!isMobile && (
+              <div style={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                bottom: 0,
+                width: 150,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 2,
+                pointerEvents: 'none',
+              }}>
+                <BoardControls
+                  variant="dock"
+                  isMyTurn={isMyTurn}
+                  busy={isMyTurn && (!!combatPlan || G.action?.state === 'begin' || queuedEndRef.current)}
+                  hasPending={!!pending}
+                  autoPlay={autoPlay}
+                  onEnd={() => { setPending(null); triggerEndTurn(); }}
+                  onCancel={() => setPending(null)}
+                  onToggleAuto={() => setAutoPlay((v) => !v)}
+                />
+              </div>
+            )}
           </div>
           </div>
 
@@ -739,30 +769,6 @@ export function Board(props: BoardProps<GameState>) {
           </div>
         </div>
 
-        {/* Turn controls — pinned to the main column's bottom-right corner,
-            OUTSIDE the scaled stage so they keep a constant, comfortable
-            size at any window size and can never collide with the hand fan
-            or hide under the side panel. Phones keep the controls in the
-            hand tray instead. */}
-        {!isMobile && (
-          <div style={{
-            position: 'absolute',
-            right: 18,
-            bottom: 14,
-            zIndex: 40,
-          }}>
-            <BoardControls
-              variant="table"
-              isMyTurn={isMyTurn}
-              busy={isMyTurn && (!!combatPlan || G.action?.state === 'begin' || queuedEndRef.current)}
-              hasPending={!!pending}
-              autoPlay={autoPlay}
-              onEnd={() => { setPending(null); triggerEndTurn(); }}
-              onCancel={() => setPending(null)}
-              onToggleAuto={() => setAutoPlay((v) => !v)}
-            />
-          </div>
-        )}
         </div>
 
         {/* PANEL DRAWER — slides in from the right edge, toggled by a thin
