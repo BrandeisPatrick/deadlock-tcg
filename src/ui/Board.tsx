@@ -644,6 +644,10 @@ export function Board(props: BoardProps<GameState>) {
             display: 'flex',
             flexDirection: 'column',
             gap: boardRows.gap(isMobile),
+            // Left gutter rail: the row nameplates ("Rival · Bench" / "Lane")
+            // live here beside the cards. Without it the fit-content stage
+            // hugs the card grid and the plaques sat on the first column.
+            paddingLeft: isMobile ? 0 : 76,
             // translateZ(0) on mobile keeps a stacking context so the
             // table layer can never paint over the rows on either branch.
             transform: isMobile ? 'translateZ(0)' : 'rotateX(9deg)',

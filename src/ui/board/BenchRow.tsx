@@ -40,9 +40,10 @@ export function BenchRow({
       height: '100%',
       minHeight: 0,
     }}>
-      {/* Side label crowds the cards on a phone — desktop only. */}
+      {/* Side label crowds the cards on a phone — desktop only. Stacked
+          two-line form fits the left gutter rail. */}
       {!isMobile && (
-        <RowPlaque>{isOpponent ? 'Rival · Bench' : 'Your · Bench'}</RowPlaque>
+        <RowPlaque>{isOpponent ? 'Rival\nBench' : 'Your\nBench'}</RowPlaque>
       )}
       <div style={{
         display: 'grid',

@@ -233,21 +233,29 @@ function RowWell({ h, lane }: { h: number; lane?: boolean }) {
 
 /**
  * Engraved brass plate for the row labels ("Rival · Bench", "Lane", …).
- * Sits on the left edge of its row well like a nameplate screwed to the rim.
+ * Lives in the board's left gutter rail (the plane's paddingLeft), beside
+ * the cards — like a nameplate screwed to the rim. Multi-word labels pass
+ * "\n" to stack ("Rival\nBench"), keeping the plate narrow enough for the
+ * gutter at any fit-scale.
  */
 export function RowPlaque({ children }: { children: ReactNode }) {
   return (
     <span style={{
       position: 'absolute',
-      left: 16,
+      left: -64,
+      width: 56,
       top: '50%',
       transform: 'translateY(-50%)',
-      padding: '4px 10px',
+      padding: '5px 4px',
       borderRadius: 5,
       background: 'linear-gradient(180deg, #52381a, #38250e)',
       border: '1px solid rgba(235, 205, 145, 0.35)',
       boxShadow: 'inset 0 1px 0 rgba(255, 226, 170, 0.28), 0 2px 5px rgba(40, 20, 0, 0.35)',
       ...text.label,
+      fontSize: 11,
+      lineHeight: 1.35,
+      textAlign: 'center',
+      whiteSpace: 'pre-line',
       color: '#e3c07f',
       textShadow: '0 1px 1px rgba(0, 0, 0, 0.55)',
       zIndex: 1,
