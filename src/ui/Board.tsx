@@ -39,7 +39,7 @@ import { useViewport } from './hooks/useViewport';
 import { palette, fonts, radius, shadow, spring, text, DAMAGE_BEAT_MS } from './tokens';
 import { GameButton } from './chrome';
 import { SidePanel } from './side-panel/SidePanel';
-import { PanelDrawer } from './side-panel/PanelDrawer';
+import { PanelDrawer, PANEL_WIDTH } from './side-panel/PanelDrawer';
 import { HandTray } from './board/HandTray';
 import { findOnBoard, filterAllows, type PendingPlay } from './helpers';
 import { getMatchConfig } from '@/storage/matchConfig';
@@ -598,6 +598,11 @@ export function Board(props: BoardProps<GameState>) {
             flex: '1 1 auto',
             maxWidth: 1100,
             width: '100%',
+            // Flexbox min-width:auto would stop this column shrinking below
+            // the stage's intrinsic width, shoving the open panel off-screen
+            // on tablet-width windows. Allowing shrink lets useFitScale see
+            // the true leftover width and scale the stage down instead.
+            minWidth: 0,
             position: 'relative', // anchors the corner-pinned turn controls
             display: 'flex',
             flexDirection: 'column',
@@ -627,7 +632,11 @@ export function Board(props: BoardProps<GameState>) {
             transform: `scale(${fitScale})`,
             transformOrigin: 'center center',
           }}>
-          <div style={{ flex: '0 0 auto' }}>
+          {/* Rival's fan tucks behind the table's far rim — negative margin
+              slides the card bottoms under the tilted plane (which stacks
+              above via zIndex), so the face-down hand rests AT the table
+              instead of floating in the room. Mobile keeps the flat gap. */}
+          <div style={{ flex: '0 0 auto', position: 'relative', zIndex: 0, marginBottom: isMobile ? 0 : -46 }}>
             <OpponentHand cards={G.players[opp].hand} />
           </div>
 
@@ -639,6 +648,10 @@ export function Board(props: BoardProps<GameState>) {
           <div style={{
             perspective: isMobile ? undefined : 1500,
             perspectiveOrigin: '50% 30%',
+            // Stacks the tilted table above the rival's fan so the far rim
+            // overlaps the tucked card bottoms (see OpponentHand wrapper).
+            position: 'relative',
+            zIndex: 1,
           }}>
           <div style={{
             position: 'relative',
@@ -747,7 +760,10 @@ export function Board(props: BoardProps<GameState>) {
           </div>
           </div>
 
-          <div style={{ flex: '0 0 auto' }}>
+          {/* zIndex 2 keeps the hand row above the tilted plane (zIndex 1),
+              so cards rising on select/hover/drag pass OVER the table's
+              front edge instead of sliding beneath it. */}
+          <div style={{ flex: '0 0 auto', position: 'relative', zIndex: 2 }}>
             <HandTray
               cards={G.players[me].hand}
               disabled={!isMyTurn}
@@ -792,6 +808,10 @@ export function Board(props: BoardProps<GameState>) {
               desc={pending.desc}
               filter={pending.filter}
               onCancel={() => setPending(null)}
+              // Desktop panel is an in-flow column the fixed banner can't see —
+              // inset its centring so it tracks the visible board, not the
+              // full viewport (its right end used to slide under the sheet).
+              rightInset={!isMobile && panelOpen ? PANEL_WIDTH : 0}
             />
           )}
         </AnimatePresence>

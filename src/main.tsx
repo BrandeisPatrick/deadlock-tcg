@@ -1,3 +1,6 @@
+// QA virtual clock — must be the first import so its rAF/timer overrides are
+// in place before framer-motion captures them. Inert without ?vtclock=1.
+import './qa/vtclock';
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { Root } from './Root';

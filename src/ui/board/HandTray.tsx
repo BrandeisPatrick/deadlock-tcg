@@ -40,8 +40,22 @@ export function HandTray({
     <div style={isMobile ? {
       display: 'flex', flexDirection: 'column', gap: 4, paddingBottom: 8, pointerEvents: 'none',
     } : {
-      paddingBottom: 16, pointerEvents: 'none',
+      paddingBottom: 16, pointerEvents: 'none', position: 'relative',
     }}>
+      {/* Contact shadow — the fan's pool of shade against the table's near
+          lip, so the held cards read as hovering just off the front edge
+          rather than floating free. Cards' transforms stack above it. */}
+      {!isMobile && cards.length > 0 && (
+        <div aria-hidden style={{
+          position: 'absolute',
+          left: '14%',
+          right: '14%',
+          bottom: 8,
+          height: 48,
+          background: 'radial-gradient(ellipse 50% 100% at 50% 100%, rgba(50, 30, 8, 0.26), rgba(50, 30, 8, 0.10) 55%, transparent 78%)',
+          filter: 'blur(2px)',
+        }} />
+      )}
       <div style={{ minWidth: 0 }}>
         <Hand
           cards={cards}

@@ -20,10 +20,22 @@ export function ArenaBackdrop() {
       <div style={{
         position: 'absolute', inset: 0,
         background: `
-          radial-gradient(ellipse 70% 55% at 50% 46%, rgba(255, 246, 214, 0.85), transparent 70%),
+          radial-gradient(ellipse 70% 55% at 50% 46%, rgba(255, 246, 214, 0.92), transparent 70%),
           radial-gradient(ellipse 90% 50% at 50% 40%, rgba(255, 244, 210, 0.5), transparent 75%),
           radial-gradient(ellipse 80% 50% at 50% 100%, rgba(120, 80, 30, 0.10), transparent 65%),
           ${palette.bg0}
+        `,
+      }} />
+
+      {/* Room falloff — the space beyond the lamp: a shaded far wall along
+          the top edge, a shadowed near lip along the bottom. Without these
+          the page read as an even parchment void and the pool never
+          registered as light. */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: `
+          linear-gradient(180deg, rgba(58, 38, 12, 0.27), rgba(58, 38, 12, 0.09) 13%, transparent 28%),
+          linear-gradient(0deg, rgba(58, 38, 12, 0.16), transparent 16%)
         `,
       }} />
 
@@ -39,7 +51,7 @@ export function ArenaBackdrop() {
         preserveAspectRatio="xMidYMid slice"
         style={{
           position: 'absolute', inset: 0, width: '100%', height: '100%',
-          opacity: 0.05,
+          opacity: 0.065,
         }}
       >
         <defs>
@@ -61,11 +73,12 @@ export function ArenaBackdrop() {
         </g>
       </svg>
 
-      {/* Warm brown edge vignette — deeper than before so the lit table
-          reads as the room's focal point. */}
+      {/* Warm brown edge vignette — deep enough that the corners genuinely
+          darken and the lit table reads as the room's focal point rather
+          than a tint on an even page. */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: `radial-gradient(ellipse 100% 100% at 50% 52%, transparent 44%, rgba(80, 50, 15, 0.28) 100%)`,
+        background: `radial-gradient(ellipse 82% 100% at 50% 52%, transparent 36%, rgba(80, 50, 15, 0.24) 72%, rgba(52, 32, 9, 0.48) 100%)`,
       }} />
     </div>
   );

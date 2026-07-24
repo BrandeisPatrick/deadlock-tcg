@@ -14,7 +14,17 @@ import { useViewport } from '../hooks/useViewport';
  * Mobile: stays a fixed overlay — there's no room to give up, and the
  * panel is closed by default there anyway.
  */
-const WIDTH = 320;
+export const PANEL_WIDTH = 320;
+const WIDTH = PANEL_WIDTH;
+
+// Ledger-page material for the panel column: a dark bound spine fading in
+// from the left edge plus the same faint horizontal paper-fibre streaks the
+// ArenaBackdrop uses — ties the sheet to the scene instead of leaving it a
+// flat colour block.
+const PANEL_SURFACE = [
+  'linear-gradient(90deg, rgba(58, 40, 16, 0.26), rgba(58, 40, 16, 0.08) 12px, transparent 30px)',
+  'repeating-linear-gradient(180deg, rgba(120, 80, 30, 0.028) 0 1px, transparent 1px 7px)',
+].join(', ');
 
 export function PanelDrawer({ open, onToggle, children }: {
   open: boolean;
@@ -76,7 +86,9 @@ export function PanelDrawer({ open, onToggle, children }: {
                 // viewport corner so the panel header never sits under it.
                 padding: '56px 12px 12px 8px',
                 background: palette.bg0,
-                boxShadow: `-8px 0 24px rgba(40, 20, 0, 0.32)`,
+                backgroundImage: PANEL_SURFACE,
+                borderLeft: '1px solid rgba(120, 80, 30, 0.32)',
+                boxShadow: `-12px 0 32px rgba(40, 20, 0, 0.36)`,
                 zIndex: 64,
                 overflow: 'hidden',
               }}
@@ -104,7 +116,7 @@ export function PanelDrawer({ open, onToggle, children }: {
           alignSelf: 'stretch',
           overflow: 'hidden',
           background: palette.bg0,
-          boxShadow: open ? `-8px 0 24px rgba(40, 20, 0, 0.32)` : 'none',
+          boxShadow: open ? `-12px 0 32px rgba(40, 20, 0, 0.36)` : 'none',
           zIndex: 64,
           position: 'relative',
         }}
@@ -118,6 +130,8 @@ export function PanelDrawer({ open, onToggle, children }: {
           boxSizing: 'border-box',
           position: 'absolute',
           right: 0, top: 0,
+          backgroundImage: PANEL_SURFACE,
+          borderLeft: '1px solid rgba(120, 80, 30, 0.32)',
         }}>
           {children}
         </div>

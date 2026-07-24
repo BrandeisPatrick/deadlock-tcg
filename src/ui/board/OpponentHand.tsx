@@ -50,6 +50,22 @@ export function OpponentHand({ cards }: Props) {
       // board rows it can overlap.
       pointerEvents: 'none',
     }}>
+      {/* Ambient occlusion behind the fan — a soft pool of shade where the
+          rival's cards meet the table's far rim, so the dark backs read as
+          resting there instead of pasted on the parchment. Painted before
+          the cards; their transforms stack them above it. */}
+      {total > 0 && (
+        <div aria-hidden style={{
+          position: 'absolute',
+          left: '50%',
+          bottom: -6,
+          width: Math.min(560, total * (CARD_W + 8) + 120),
+          height: 54,
+          transform: 'translateX(-50%)',
+          background: 'radial-gradient(ellipse 50% 100% at 50% 100%, rgba(50, 30, 8, 0.22), rgba(50, 30, 8, 0.09) 55%, transparent 78%)',
+          filter: 'blur(2px)',
+        }} />
+      )}
       {total === 0 && (
         <div style={{ ...text.label, color: palette.textFaint, padding: '20px 0' }}>
           Rival — no cards in hand

@@ -63,6 +63,16 @@ export interface AttackPlan {
  */
 export function planAttackPhase(G: GameState, attackerId: PlayerID): AttackPlan {
   const defenderId = otherPlayer(attackerId);
+
+  // Mirror resolveAttackPhase's first-turn rule (P0 forgoes first-strike on
+  // Turn 1): the plan must predict "no attacks" too, or the UI choreographs
+  // a phantom strike — tracers, hit flashes, Damaged banners — that the
+  // engine then never applies. Same condition as the resolver, so the two
+  // can't drift apart on this rule.
+  if ((G.turnNumber ?? 1) <= 1) {
+    return { attackerId, defenderId, steps: [], damageToActive: 0, damageToFace: 0, defenderActiveKO: null };
+  }
+
   const attacker = G.players[attackerId];
   const defender = G.players[defenderId];
 

@@ -512,9 +512,13 @@ function DamageFlashDemo() {
   const card = mockHeroInstance(hero);
   const [fx, setFx] = useState<DamageEvent | null>(null);
   const seqRef = useRef(0);
+  // Clear-timer held in a ref: re-firing within the 1.5s window must cancel
+  // the previous unmount fuse, or the stale timer cuts the NEW flash short.
+  const clearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fire = (type: 'attack' | 'spirit' | 'pure', ko = false) => {
+    if (clearRef.current) clearTimeout(clearRef.current);
     setFx({ iid: card.iid, type, ko, amount: ko ? 99 : 3, seq: ++seqRef.current });
-    setTimeout(() => setFx(null), 1500);
+    clearRef.current = setTimeout(() => setFx(null), 1500);
   };
   const resolver = (iid: string) => (iid === card.iid ? fx : null);
   return (

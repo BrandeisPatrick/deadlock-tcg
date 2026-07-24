@@ -7,6 +7,10 @@ interface Props {
   desc: string;
   filter: TargetFilter;
   onCancel: () => void;
+  /** Extra right-edge inset (px) — the open side panel's width on desktop,
+   *  so the banner centres over the visible board instead of the full
+   *  viewport (where its right end slides under the panel sheet). */
+  rightInset?: number;
 }
 
 const TARGET_LABELS: Record<TargetFilter, string> = {
@@ -20,37 +24,47 @@ const TARGET_LABELS: Record<TargetFilter, string> = {
   anyBoard: 'Any Hero',
 };
 
-export function TargetingOverlay({ title, desc, filter, onCancel }: Props) {
+export function TargetingOverlay({ title, desc, filter, onCancel, rightInset = 0 }: Props) {
   // Anchor the banner AWAY from the rows it asks the player to tap: ally
   // targeting docks under the rival's hand (your rows stay clear), enemy
   // targeting docks above your hand (the rival's rows stay clear).
   const anchorTop = filter === 'allyAny' || filter === 'allyHero' || filter === 'self';
   return (
+    // Outer strip: spans the VISIBLE board area (viewport minus the open
+    // panel via rightInset). Only left+right are set — adding a width would
+    // over-constrain the box and CSS silently drops `right`, which is how
+    // the pill used to end up centred on the full viewport with its tail
+    // under the panel sheet. The pill centres inside via flex and may
+    // shrink below its natural width (the text span ellipsizes).
+    <div style={{
+      position: 'fixed',
+      left: 16, right: 16 + rightInset,
+      ...(anchorTop
+        ? { top: 14 }
+        : { bottom: 'calc(220px + env(safe-area-inset-bottom))' }),
+      display: 'flex',
+      justifyContent: 'center',
+      pointerEvents: 'none',
+      zIndex: 50,
+    }}>
     <motion.div
       initial={{ opacity: 0, y: anchorTop ? -20 : 20, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: anchorTop ? -10 : 10, scale: 0.96 }}
       transition={spring.snappy}
       style={{
-        position: 'fixed',
-        left: 16, right: 16,
-        ...(anchorTop
-          ? { top: 14 }
-          : { bottom: 'calc(220px + env(safe-area-inset-bottom))' }),
         // Single-line strip: the old three-row card was ~110px tall and
         // buried a whole board row (including rows that can hold targets).
-        maxWidth: 680,
-        width: 'fit-content',
-        margin: '0 auto',
+        maxWidth: 'min(680px, 100%)',
         display: 'flex',
         alignItems: 'center',
         gap: 12,
+        pointerEvents: 'auto',
         background: palette.bg1,
         border: `2px solid ${palette.success}`,
         borderRadius: 999,
         padding: '7px 8px 7px 8px',
         boxShadow: `0 10px 26px rgba(40, 20, 0, 0.32), 0 0 22px ${palette.success}55`,
-        zIndex: 50,
       }}
     >
       <span style={{
@@ -101,5 +115,6 @@ export function TargetingOverlay({ title, desc, filter, onCancel }: Props) {
         ✕
       </motion.button>
     </motion.div>
+    </div>
   );
 }
