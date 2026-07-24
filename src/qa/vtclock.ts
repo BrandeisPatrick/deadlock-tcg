@@ -27,6 +27,10 @@ declare global {
       now: () => number;
       tick: (ms?: number) => { vnow: number; rafPending: number; timersPending: number };
     };
+    __slow?: {
+      get: () => number;
+      set: (factor: number) => number;
+    };
   }
 }
 
@@ -120,6 +124,72 @@ if (new URLSearchParams(window.location.search).get('vtclock') === '1') {
     },
   };
   console.info('[vtclock] virtual clock installed — advance with __vt.tick(ms)');
+}
+
+// ---------------------------------------------------------------------------
+// Slow-motion mode — `?vtslow=N` (e.g. vtslow=6): the app runs on the REAL
+// clock but N× slower. Unlike vtclock (frozen clock, DOM-only sampling), the
+// page keeps painting normally, so screenshots taken ~1/s act as a high-speed
+// camera over animations that normally last a few hundred ms.
+//
+// Implementation: a piecewise-dilated timeline. performance.now/Date.now and
+// rAF timestamps advance at realDelta / factor; setTimeout/setInterval delays
+// are multiplied by the factor so game pacing (AI think, combat beats, reveal
+// holds) stays in step with the dilated animations. WAAPI is disabled the
+// same way as vtclock so no animation escapes onto the compositor's real-rate
+// clock. The factor is runtime-adjustable via `__slow.set(N)` — play at 1×,
+// switch to 6× just before the moment you want to film, back to 1× after.
+// Pending timers keep the factor they were scheduled under; that skew is fine
+// for QA. Ignored when vtclock is active (a frozen clock subsumes slow-mo).
+if (
+  new URLSearchParams(window.location.search).get('vtclock') !== '1' &&
+  Number(new URLSearchParams(window.location.search).get('vtslow') ?? 0) > 1
+) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  delete (Element.prototype as any).animate;
+
+  let factor = Number(new URLSearchParams(window.location.search).get('vtslow'));
+  const realNow = performance.now.bind(performance);
+  let vNow = realNow();
+  let lastReal = vNow;
+  const dilatedNow = () => {
+    const real = realNow();
+    vNow += (real - lastReal) / factor;
+    lastReal = real;
+    return vNow;
+  };
+  performance.now = dilatedNow;
+  const dateOffset = Date.now() - vNow;
+  Date.now = () => Math.round(dilatedNow() + dateOffset);
+
+  const realRaf = window.requestAnimationFrame.bind(window);
+  window.requestAnimationFrame = (cb: FrameRequestCallback) =>
+    realRaf(() => cb(dilatedNow()));
+
+  const realSetTimeout = window.setTimeout.bind(window);
+  window.setTimeout = ((cb: TimerHandler, ms = 0, ...args: unknown[]) =>
+    realSetTimeout(
+      cb as never,
+      typeof cb === 'function' && ms > 4 ? ms * factor : ms,
+      ...args,
+    )) as typeof window.setTimeout;
+  const realSetInterval = window.setInterval.bind(window);
+  window.setInterval = ((cb: TimerHandler, ms = 0, ...args: unknown[]) =>
+    realSetInterval(
+      cb as never,
+      typeof cb === 'function' && ms > 4 ? ms * factor : ms,
+      ...args,
+    )) as typeof window.setInterval;
+
+  window.__slow = {
+    get: () => factor,
+    set: (f: number) => {
+      dilatedNow(); // settle vNow under the old factor first
+      factor = Math.max(1, f);
+      return factor;
+    },
+  };
+  console.info(`[vtclock] slow-motion installed — ${factor}× (adjust with __slow.set(n))`);
 }
 
 export {};
