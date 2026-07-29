@@ -232,6 +232,22 @@ export function Board(props: BoardProps<GameState>) {
   // never sits on top of the very targets the player is being asked to pick.
   useEffect(() => { if (pending && preview) setPreview(null); }, [pending, preview]);
 
+  // Layered Escape: back out of the innermost mode first — an armed
+  // targeting state or an open hero sheet — before the key reaches the
+  // SystemLayer's pause-menu toggle. Capture phase + stopImmediatePropagation
+  // so the system listener (bubble phase on window) never sees the press.
+  useEffect(() => {
+    if (!pending && !heroDetail) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.stopImmediatePropagation();
+      if (heroDetail) setHeroDetail(null);
+      else setPending(null);
+    };
+    window.addEventListener('keydown', onKey, { capture: true });
+    return () => window.removeEventListener('keydown', onKey, { capture: true });
+  }, [pending, heroDetail]);
+
   // Safety net: if the previewed card (hand or attached equipment) is no longer present, drop the preview.
   useEffect(() => {
     if (!preview?.hover) return;
@@ -682,7 +698,10 @@ export function Board(props: BoardProps<GameState>) {
                 furniture, not floating chrome. */}
             <div style={{
               position: 'absolute',
-              top: -tablePad(isMobile).top - (isMobile ? 4 : 9),
+              // Mobile's flat board has no deep rim to mount on — hoist the
+              // plate fully above the frame so it never clips the first
+              // bench card; desktop keeps the carved-into-the-rim overlap.
+              top: -tablePad(isMobile).top - (isMobile ? 18 : 9),
               left: -tablePad(isMobile).x + (isMobile ? 4 : 12),
               zIndex: 2,
             }}>
@@ -699,7 +718,7 @@ export function Board(props: BoardProps<GameState>) {
             </div>
             <div style={{
               position: 'absolute',
-              bottom: -tablePad(isMobile).bottom - (isMobile ? 4 : 9),
+              bottom: -tablePad(isMobile).bottom - (isMobile ? 18 : 9),
               left: -tablePad(isMobile).x + (isMobile ? 4 : 12),
               zIndex: 2,
             }}>
