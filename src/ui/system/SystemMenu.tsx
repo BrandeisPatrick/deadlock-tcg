@@ -26,14 +26,38 @@ export function SystemLayer({ screen, onExitToMenu, exitLabel }: {
   // Re-disarm the destructive reset whenever the menu closes.
   useEffect(() => { if (!open) setArmReset(false); }, [open]);
 
-  // Escape closes the menu (open stays click-only so we never steal the
-  // key from in-game overlays like targeting).
+  // Escape toggles the menu — the universal pause gesture. Nothing else in
+  // the app binds Escape (verified), so claiming it globally is additive;
+  // if an overlay ever needs the key first it should stopPropagation.
+  // Ignore the key while typing in an input (deck name field).
   useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      setOpen((v) => !v);
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open]);
+  }, []);
+
+  // Fullscreen — tracked from the document so the toggle reflects reality
+  // even when the user exits with the browser's own Esc handling.
+  const [isFullscreen, setIsFullscreen] = useState(
+    typeof document !== 'undefined' && !!document.fullscreenElement,
+  );
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+  function toggleFullscreen() {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  }
 
   function resetAll() {
     if (!armReset) { setArmReset(true); return; }
@@ -49,7 +73,7 @@ export function SystemLayer({ screen, onExitToMenu, exitLabel }: {
       {/* Gear — always visible, always in the same corner. */}
       <motion.button
         aria-label="System menu"
-        title="System menu"
+        title="Menu (Esc)"
         onClick={() => setOpen((v) => !v)}
         whileHover={{ scale: 1.08, rotate: 24 }}
         whileTap={{ scale: 0.92 }}
@@ -187,6 +211,46 @@ export function SystemLayer({ screen, onExitToMenu, exitLabel }: {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Display */}
+              <div style={{ padding: '14px 0 4px' }}>
+                <div style={{ ...text.label, color: palette.textDim, marginBottom: 8 }}>
+                  Display
+                </div>
+                <button
+                  onClick={toggleFullscreen}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '10px 12px',
+                    borderRadius: 10,
+                    background: 'linear-gradient(180deg, rgba(84, 58, 22, 0.14), rgba(84, 58, 22, 0.08))',
+                    border: '1px solid rgba(84, 58, 22, 0.32)',
+                    boxShadow: 'inset 0 2px 6px rgba(70, 45, 12, 0.25)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span style={{ ...text.label, color: palette.text }}>Fullscreen</span>
+                  <span style={{
+                    padding: '4px 12px',
+                    borderRadius: 7,
+                    border: '1px solid #5a3f1c',
+                    background: isFullscreen
+                      ? 'linear-gradient(180deg, #e2ab42, #b07825 55%, #955f19)'
+                      : 'rgba(84, 58, 22, 0.12)',
+                    color: isFullscreen ? '#241503' : palette.textDim,
+                    textShadow: isFullscreen ? '0 1px 0 rgba(255, 235, 180, 0.45)' : undefined,
+                    boxShadow: isFullscreen
+                      ? 'inset 0 1px 0 rgba(255, 240, 200, 0.7), 0 2px 5px rgba(40, 20, 0, 0.25)'
+                      : 'inset 0 1px 2px rgba(70, 45, 12, 0.25)',
+                    ...text.label,
+                  }}>
+                    {isFullscreen ? 'On' : 'Off'}
+                  </span>
+                </button>
               </div>
 
               {/* Actions */}
