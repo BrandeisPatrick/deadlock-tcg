@@ -97,22 +97,8 @@ export function OpponentHand({ cards }: Props) {
           );
         })}
       </AnimatePresence>
-      {total > 0 && (
-        // Inline chip beside the fan — the old absolutely-positioned counter
-        // floated in dead space once the stage stopped spanning the viewport.
-        <span style={{
-          alignSelf: 'center',
-          marginLeft: 14,
-          display: 'inline-flex', alignItems: 'baseline', gap: 6,
-          padding: '4px 10px',
-          borderRadius: 999,
-          background: 'rgba(58, 40, 16, 0.08)',
-          border: '1px solid rgba(90, 63, 28, 0.28)',
-        }}>
-          <span style={{ ...text.label, fontSize: 11, color: palette.textDim }}>Hand</span>
-          <span style={{ ...text.numeric, fontSize: 15, color: palette.text }}>{total}</span>
-        </span>
-      )}
+      {/* No count chip — the rival PatronPlaque on the table rim is the
+          canonical hand counter now; the fan itself just shows the cards. */}
     </div>
   );
 }

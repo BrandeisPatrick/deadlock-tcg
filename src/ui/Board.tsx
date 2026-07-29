@@ -21,7 +21,8 @@ import { MAX_EQUIPMENT_PER_HERO, RETREAT_COST } from '@/engine/game';
 import { BenchRow } from './board/BenchRow';
 import { ActiveSlot } from './board/ActiveSlot';
 import { ActiveDuel } from './board/ActiveDuel';
-import { BoardTable, boardRows } from './board/BoardTable';
+import { BoardTable, boardRows, tablePad } from './board/BoardTable';
+import { PatronPlaque } from './board/PatronPlaque';
 import { BoardControls } from './board/BoardControls';
 import { enumerateAIMoves } from '@/ai/heuristic';
 import { getAbility, type TargetFilter } from '@/abilities';
@@ -63,7 +64,10 @@ export function Board(props: BoardProps<GameState>) {
   // top-right; flip off any time to take control back.
   const [autoPlay, setAutoPlay] = useState(false);
   const [logOpen, setLogOpen] = useState(false);
-  const [panelOpen, setPanelOpen] = useState(() => window.innerWidth > 767);
+  // Panel default: the patron plaques now carry the vitals on-board, so the
+  // panel is optional depth (log + detail). Auto-open only where its 320px
+  // cost is negligible; tablets start with the full battlefield instead.
+  const [panelOpen, setPanelOpen] = useState(() => window.innerWidth >= 1100);
   const [preview, setPreview] = useState<{ card: CardInstance; hover: boolean } | null>(null);
   const [heroDetail, setHeroDetail] = useState<CardInstance | null>(null);
   // Equipment replacement flow: when the player tries to attach a 4th piece
@@ -669,6 +673,46 @@ export function Board(props: BoardProps<GameState>) {
           }}>
             {/* Painted tabletop — decorative layer behind the rows. */}
             <BoardTable isMobile={isMobile} />
+
+            {/* Patron plaques — vitals carved into the rim corners so HP,
+                counts and skill state live ON the battlefield (the panel is
+                optional depth). Rival rides the far rim, you the near rim,
+                pairing with the soul racks' top/bottom split at the right
+                edge. Inside the tilted plane on purpose: they are table
+                furniture, not floating chrome. */}
+            <div style={{
+              position: 'absolute',
+              top: -tablePad(isMobile).top - (isMobile ? 4 : 9),
+              left: -tablePad(isMobile).x + (isMobile ? 4 : 12),
+              zIndex: 2,
+            }}>
+              <PatronPlaque
+                label="Sapphire Flame"
+                ps={G.players[opp]}
+                hostile
+                skillUsed={G.players[opp].skillUsedThisTurn}
+                projectedFaceDamage={ctx.currentPlayer === me ? projectedFaceDamage : 0}
+                side="top"
+                isMobile={isMobile}
+                myTurn={!isMyTurn}
+              />
+            </div>
+            <div style={{
+              position: 'absolute',
+              bottom: -tablePad(isMobile).bottom - (isMobile ? 4 : 9),
+              left: -tablePad(isMobile).x + (isMobile ? 4 : 12),
+              zIndex: 2,
+            }}>
+              <PatronPlaque
+                label="Amber Hand"
+                ps={G.players[me]}
+                skillUsed={G.players[me].skillUsedThisTurn}
+                projectedFaceDamage={ctx.currentPlayer !== me ? projectedFaceDamage : 0}
+                side="bottom"
+                isMobile={isMobile}
+                myTurn={isMyTurn}
+              />
+            </div>
 
             {/* OPP BENCH (3 cards) */}
             <div style={{ position: 'relative', zIndex: 1, flex: `0 0 ${boardRows.bench(isMobile)}px`, height: boardRows.bench(isMobile) }}>

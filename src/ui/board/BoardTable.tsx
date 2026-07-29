@@ -13,8 +13,10 @@ export const boardRows = {
   gap: (mobile: boolean) => (mobile ? 20 : 40),
 } as const;
 
-/** How far the table extends beyond the rows' bounding box. */
-const tablePad = (mobile: boolean) => ({
+/** How far the table extends beyond the rows' bounding box. Exported so
+ *  rim-mounted fixtures (PatronPlaque) can anchor to the same edges the
+ *  painted table actually occupies. */
+export const tablePad = (mobile: boolean) => ({
   x: mobile ? 8 : 34,
   top: mobile ? 12 : 24,
   bottom: mobile ? 12 : 26,
