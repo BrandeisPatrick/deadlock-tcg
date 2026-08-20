@@ -93,7 +93,17 @@ export function DraftOverlay({ draft, currentPlayer, me, onPick }: Props) {
         myTurn={myTurn}
         aiTurn={aiTurn}
         currentPickNumber={draft.currentIndex + 1}
+        isMobile={isMobile}
       />
+
+      {/* Desktop status pill lives at the root: the overlay only animates
+          opacity here, so position:fixed anchors to the real viewport. */}
+      {!isMobile && (
+        <StatusPill
+          aiTurn={aiTurn}
+          label={myTurn ? 'Your pick' : aiTurn ? 'Opponent picking…' : 'Draft complete'}
+        />
+      )}
 
       <AnimatePresence>
         {autoBanner && (
@@ -164,10 +174,12 @@ function Header({
   myTurn,
   aiTurn,
   currentPickNumber,
+  isMobile,
 }: {
   myTurn: boolean;
   aiTurn: boolean;
   currentPickNumber: number;
+  isMobile: boolean;
 }) {
   const pillLabel = myTurn ? 'Your pick' : aiTurn ? 'Opponent picking…' : 'Draft complete';
   return (
@@ -180,9 +192,12 @@ function Header({
         alignItems: 'baseline',
         justifyContent: 'space-between',
         marginBottom: 14,
-        // Right padding keeps the status pill clear of the persistent
-        // system gear pinned to the viewport corner.
-        paddingRight: 44,
+        // Mobile keeps the pill in-flow: clear the persistent gear (12px
+        // margin + 40px button + 12px gap = 64 from the edge; minus the
+        // overlay's own 12px padding → 52, plus slack). Desktop renders the
+        // pill as an absolute corner fixture instead (below), so the row
+        // only needs to stop short of it.
+        paddingRight: isMobile ? 56 : 230,
         paddingBottom: 12,
         borderBottom: `1px solid ${palette.border}`,
       }}
@@ -214,35 +229,61 @@ function Header({
           Pick {currentPickNumber} of 8
         </div>
       </div>
-      <div
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 10,
-          padding: '6px 18px',
-          background: palette.bg1,
-          border: `1px solid #5a3f1c`,
-          borderRadius: 999,
-          boxShadow: '0 4px 12px rgba(40, 20, 0, 0.14)',
-        }}
-      >
-        {aiTurn && (
-          <motion.span
-            aria-hidden
-            animate={{ opacity: [0.4, 1, 0.4] }}
-            transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: palette.accent,
-              display: 'inline-block',
-            }}
-          />
-        )}
-        <span style={{ ...text.label, color: palette.text }}>{pillLabel}</span>
-      </div>
+      {/* Mobile keeps the status pill in the header row; desktop docks it
+          on the gear's axis via StatusPill rendered at the OVERLAY root —
+          the header's entrance transform makes it a containing block, so a
+          fixed pill nested here would anchor to the header, not the
+          viewport, and drift during the entrance. */}
+      {isMobile && <StatusPill aiTurn={aiTurn} label={pillLabel} inFlow />}
     </motion.div>
+  );
+}
+
+/** Draft status capsule. In-flow on mobile (inside the header row);
+ *  viewport-fixed on desktop — same top and 40px height as the system
+ *  gear with a 12px gap, so the two corner capsules read as one cluster. */
+function StatusPill({ aiTurn, label, inFlow }: {
+  aiTurn: boolean;
+  label: string;
+  inFlow?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 10,
+        padding: '6px 18px',
+        background: palette.bg1,
+        border: `1px solid #5a3f1c`,
+        borderRadius: 999,
+        boxShadow: '0 4px 12px rgba(40, 20, 0, 0.14)',
+        ...(inFlow ? { alignSelf: 'center' as const } : {
+          position: 'fixed' as const,
+          top: 12,
+          right: 64,
+          height: 40,
+          boxSizing: 'border-box' as const,
+          zIndex: 96,
+        }),
+      }}
+    >
+      {aiTurn && (
+        <motion.span
+          aria-hidden
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: palette.accent,
+            display: 'inline-block',
+          }}
+        />
+      )}
+      <span style={{ ...text.label, color: palette.text }}>{label}</span>
+    </div>
   );
 }
 
