@@ -159,7 +159,12 @@ export function SystemLayer({ screen, onExitToMenu, exitLabel }: {
               }}>
                 <span style={{
                   fontFamily: fonts.display,
-                  fontSize: 22,
+                  // 22px stencil lost its bridges and read as a stray serif
+                  // next to the start screen's big stencil titles — at 26px
+                  // with the same tracking as the home tiles it reads as the
+                  // same voice.
+                  fontSize: 26,
+                  letterSpacing: '0.04em',
                   color: palette.text,
                   textShadow: '0 1px 0 rgba(255, 244, 214, 0.6)',
                 }}>

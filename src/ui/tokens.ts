@@ -173,12 +173,16 @@ export const statRow = {
 } as const;
 
 export const text = {
+  // Labels carry the game's stencil-poster voice everywhere: uppercase with
+  // a touch of tracking, matching the start screen's eyebrow language. One
+  // register for every label — menus, panel rows, plaques, banners — so no
+  // surface reads like a generic web form next to the stenciled home.
   label: {
     fontFamily: fonts.ui,
     fontSize: 12,
     fontWeight: 700,
-    letterSpacing: '0',
-    textTransform: 'none' as const,
+    letterSpacing: '0.07em',
+    textTransform: 'uppercase' as const,
     lineHeight: 1.2,
   },
   body: {
