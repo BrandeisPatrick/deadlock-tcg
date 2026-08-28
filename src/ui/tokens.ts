@@ -172,6 +172,22 @@ export const statRow = {
   }),
 } as const;
 
+/**
+ * The System menu's single text voice — every string on the settings sheet
+ * except the "System" title uses exactly this (one family, one size, one
+ * weight, one casing, one colour). Tweak this object to restyle the whole
+ * menu at once.
+ */
+export const systemFont = {
+  fontFamily: fonts.ui,
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: '0.07em',
+  textTransform: 'uppercase' as const,
+  lineHeight: 1.35,
+  color: palette.text,
+} as const;
+
 export const text = {
   // Labels carry the game's stencil-poster voice everywhere: uppercase with
   // a touch of tracking, matching the start screen's eyebrow language. One

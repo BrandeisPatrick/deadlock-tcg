@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { palette, fonts, spring, text } from '../tokens';
+import { palette, fonts, spring, systemFont } from '../tokens';
 import { GameButton } from '../chrome';
 import { useSettings, updateSettings, APP_STORAGE_KEYS, type AppSettings } from '@/storage/settings';
 
@@ -218,7 +218,7 @@ export function SystemLayer({ screen, onExitToMenu, exitLabel }: {
                   <GameButton
                     variant={screen === 'match' ? 'wine' : 'parchment'}
                     onClick={() => { setOpen(false); onExitToMenu(); }}
-                    style={{ width: '100%', textAlign: 'center' }}
+                    style={{ width: '100%', textAlign: 'center', ...systemFont }}
                   >
                     {exitLabel}
                   </GameButton>
@@ -226,7 +226,7 @@ export function SystemLayer({ screen, onExitToMenu, exitLabel }: {
                 <GameButton
                   variant="wine"
                   onClick={resetAll}
-                  style={{ width: '100%', textAlign: 'center' }}
+                  style={{ width: '100%', textAlign: 'center', ...systemFont }}
                 >
                   {armReset ? 'Tap again to erase everything' : 'Reset save data'}
                 </GameButton>
@@ -243,17 +243,10 @@ export function SystemLayer({ screen, onExitToMenu, exitLabel }: {
                 gap: 5,
                 textAlign: 'center',
               }}>
-                <div style={{ ...text.body, fontSize: 12, color: palette.textFaint }}>
+                <div style={{ ...systemFont }}>
                   A fan-made tabletop adaptation. Not affiliated with Valve.
                 </div>
-                <div style={{
-                  fontFamily: fonts.display,
-                  fontSize: 11,
-                  letterSpacing: '0.32em',
-                  textTransform: 'uppercase',
-                  color: palette.textFaint,
-                  opacity: 0.75,
-                }}>
+                <div style={{ ...systemFont }}>
                   v0.1 · early prototype
                 </div>
               </div>
@@ -269,7 +262,7 @@ export function SystemLayer({ screen, onExitToMenu, exitLabel }: {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ padding: '16px 0 2px' }}>
-      <div style={{ ...text.label, color: palette.textDim, marginBottom: 8 }}>{title}</div>
+      <div style={{ ...systemFont, marginBottom: 8 }}>{title}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{children}</div>
     </div>
   );
@@ -282,10 +275,10 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14,
       }}>
-        <span style={{ ...text.label, color: palette.text, whiteSpace: 'nowrap' }}>{label}</span>
+        <span style={{ ...systemFont, whiteSpace: 'nowrap' }}>{label}</span>
         <div style={{ flex: '0 1 260px', minWidth: 180 }}>{children}</div>
       </div>
-      {hint && <div style={{ ...text.body, fontSize: 11, color: palette.textFaint }}>{hint}</div>}
+      {hint && <div style={{ ...systemFont }}>{hint}</div>}
     </div>
   );
 }
@@ -320,12 +313,10 @@ function Segmented<T extends string | number>({ options, value, onSelect }: {
               background: active
                 ? 'linear-gradient(180deg, #e2ab42, #b07825 55%, #955f19)'
                 : 'transparent',
-              color: active ? '#241503' : palette.textDim,
-              textShadow: active ? '0 1px 0 rgba(255, 235, 180, 0.45)' : undefined,
               boxShadow: active
                 ? 'inset 0 1px 0 rgba(255, 240, 200, 0.7), 0 2px 5px rgba(40, 20, 0, 0.25)'
                 : undefined,
-              ...text.label,
+              ...systemFont,
               fontVariantNumeric: 'tabular-nums',
               cursor: 'pointer',
             }}
@@ -367,8 +358,8 @@ function ToggleRow({ label, hint, on, onClick }: {
         display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2,
         textAlign: 'left',
       }}>
-        <span style={{ ...text.label, color: palette.text }}>{label}</span>
-        {hint && <span style={{ ...text.body, fontSize: 11, color: palette.textFaint }}>{hint}</span>}
+        <span style={{ ...systemFont }}>{label}</span>
+        {hint && <span style={{ ...systemFont }}>{hint}</span>}
       </span>
       <span style={{
         padding: '4px 12px',
@@ -377,12 +368,10 @@ function ToggleRow({ label, hint, on, onClick }: {
         background: on
           ? 'linear-gradient(180deg, #e2ab42, #b07825 55%, #955f19)'
           : 'rgba(84, 58, 22, 0.12)',
-        color: on ? '#241503' : palette.textDim,
-        textShadow: on ? '0 1px 0 rgba(255, 235, 180, 0.45)' : undefined,
         boxShadow: on
           ? 'inset 0 1px 0 rgba(255, 240, 200, 0.7), 0 2px 5px rgba(40, 20, 0, 0.25)'
           : 'inset 0 1px 2px rgba(70, 45, 12, 0.25)',
-        ...text.label,
+        ...systemFont,
         flexShrink: 0,
       }}>
         {on ? 'On' : 'Off'}
