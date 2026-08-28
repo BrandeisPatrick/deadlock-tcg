@@ -128,7 +128,9 @@ export function SystemLayer({ screen, onExitToMenu, exitLabel }: {
               onClick={(e) => e.stopPropagation()}
               style={{
                 position: 'relative',
-                width: 'min(400px, 92vw)',
+                width: 'min(560px, 94vw)',
+                maxHeight: 'min(86vh, 720px)',
+                overflowY: 'auto',
                 borderRadius: 14,
                 background: `linear-gradient(180deg, ${palette.bg2}, ${palette.bg1} 30%, #e6d4ab)`,
                 border: '1px solid #5a3f1c',
@@ -170,93 +172,40 @@ export function SystemLayer({ screen, onExitToMenu, exitLabel }: {
                 }}>
                   System
                 </span>
-                <span style={{ ...text.label, color: palette.textFaint }}>v0.1</span>
               </div>
 
-              {/* Combat tempo */}
-              <div style={{ padding: '16px 0 4px' }}>
-                <div style={{ ...text.label, color: palette.textDim, marginBottom: 8 }}>
-                  Combat speed
-                </div>
-                <div style={{
-                  display: 'flex',
-                  gap: 6,
-                  padding: 4,
-                  borderRadius: 10,
-                  background: 'linear-gradient(180deg, rgba(84, 58, 22, 0.14), rgba(84, 58, 22, 0.08))',
-                  border: '1px solid rgba(84, 58, 22, 0.32)',
-                  boxShadow: 'inset 0 2px 6px rgba(70, 45, 12, 0.25)',
-                }}>
-                  {([1, 1.5, 2] as AppSettings['combatSpeed'][]).map((speed) => {
-                    const active = settings.combatSpeed === speed;
-                    return (
-                      <button
-                        key={speed}
-                        onClick={() => updateSettings({ combatSpeed: speed })}
-                        style={{
-                          flex: 1,
-                          padding: '8px 0',
-                          borderRadius: 7,
-                          border: active ? '1px solid #5a3f1c' : '1px solid transparent',
-                          background: active
-                            ? 'linear-gradient(180deg, #e2ab42, #b07825 55%, #955f19)'
-                            : 'transparent',
-                          color: active ? '#241503' : palette.textDim,
-                          textShadow: active ? '0 1px 0 rgba(255, 235, 180, 0.45)' : undefined,
-                          boxShadow: active
-                            ? 'inset 0 1px 0 rgba(255, 240, 200, 0.7), 0 2px 5px rgba(40, 20, 0, 0.25)'
-                            : undefined,
-                          ...text.label,
-                          fontVariantNumeric: 'tabular-nums',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {speed}×
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              {/* Game */}
+              <Section title="Game">
+                <Field label="Combat speed">
+                  <Segmented
+                    options={([1, 1.5, 2] as AppSettings['combatSpeed'][]).map((s) => ({ value: s, label: `${s}×` }))}
+                    value={settings.combatSpeed}
+                    onSelect={(speed) => updateSettings({ combatSpeed: speed })}
+                  />
+                </Field>
+                <Field label="Side panel on match start" hint="Auto opens it only on wide screens.">
+                  <Segmented
+                    options={([
+                      { value: 'auto', label: 'Auto' },
+                      { value: 'open', label: 'Open' },
+                      { value: 'closed', label: 'Closed' },
+                    ] as const).map((o) => o)}
+                    value={settings.panelDefault}
+                    onSelect={(panelDefault) => updateSettings({ panelDefault })}
+                  />
+                </Field>
+              </Section>
 
               {/* Display */}
-              <div style={{ padding: '14px 0 4px' }}>
-                <div style={{ ...text.label, color: palette.textDim, marginBottom: 8 }}>
-                  Display
-                </div>
-                <button
-                  onClick={toggleFullscreen}
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '10px 12px',
-                    borderRadius: 10,
-                    background: 'linear-gradient(180deg, rgba(84, 58, 22, 0.14), rgba(84, 58, 22, 0.08))',
-                    border: '1px solid rgba(84, 58, 22, 0.32)',
-                    boxShadow: 'inset 0 2px 6px rgba(70, 45, 12, 0.25)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <span style={{ ...text.label, color: palette.text }}>Fullscreen</span>
-                  <span style={{
-                    padding: '4px 12px',
-                    borderRadius: 7,
-                    border: '1px solid #5a3f1c',
-                    background: isFullscreen
-                      ? 'linear-gradient(180deg, #e2ab42, #b07825 55%, #955f19)'
-                      : 'rgba(84, 58, 22, 0.12)',
-                    color: isFullscreen ? '#241503' : palette.textDim,
-                    textShadow: isFullscreen ? '0 1px 0 rgba(255, 235, 180, 0.45)' : undefined,
-                    boxShadow: isFullscreen
-                      ? 'inset 0 1px 0 rgba(255, 240, 200, 0.7), 0 2px 5px rgba(40, 20, 0, 0.25)'
-                      : 'inset 0 1px 2px rgba(70, 45, 12, 0.25)',
-                    ...text.label,
-                  }}>
-                    {isFullscreen ? 'On' : 'Off'}
-                  </span>
-                </button>
-              </div>
+              <Section title="Display">
+                <ToggleRow label="Fullscreen" on={isFullscreen} onClick={toggleFullscreen} />
+                <ToggleRow
+                  label="Reduce motion"
+                  hint="Skips movement animations; fades stay."
+                  on={settings.reducedMotion}
+                  onClick={() => updateSettings({ reducedMotion: !settings.reducedMotion })}
+                />
+              </Section>
 
               {/* Actions */}
               <div style={{
@@ -283,23 +232,162 @@ export function SystemLayer({ screen, onExitToMenu, exitLabel }: {
                 </GameButton>
               </div>
 
-              {/* Footer */}
+              {/* About — the disclaimer + version line (moved here from the
+                  start screen's footer so the title page stays clean). */}
               <div style={{
-                marginTop: 16,
-                paddingTop: 12,
+                marginTop: 18,
+                paddingTop: 14,
                 borderTop: `1px solid ${palette.border}`,
-                ...text.body,
-                fontSize: 11,
-                color: palette.textFaint,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 5,
                 textAlign: 'center',
               }}>
-                A fan-made tabletop adaptation · not affiliated with Valve
+                <div style={{ ...text.body, fontSize: 12, color: palette.textFaint }}>
+                  A fan-made tabletop adaptation. Not affiliated with Valve.
+                </div>
+                <div style={{
+                  fontFamily: fonts.display,
+                  fontSize: 11,
+                  letterSpacing: '0.32em',
+                  textTransform: 'uppercase',
+                  color: palette.textFaint,
+                  opacity: 0.75,
+                }}>
+                  v0.1 · early prototype
+                </div>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+/** Titled settings block — keeps every group's rhythm identical. */
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ padding: '16px 0 2px' }}>
+      <div style={{ ...text.label, color: palette.textDim, marginBottom: 8 }}>{title}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{children}</div>
+    </div>
+  );
+}
+
+/** Labelled control row (label left, control right) with an optional hint. */
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14,
+      }}>
+        <span style={{ ...text.label, color: palette.text, whiteSpace: 'nowrap' }}>{label}</span>
+        <div style={{ flex: '0 1 260px', minWidth: 180 }}>{children}</div>
+      </div>
+      {hint && <div style={{ ...text.body, fontSize: 11, color: palette.textFaint }}>{hint}</div>}
+    </div>
+  );
+}
+
+/** Recessed segmented control — the combat-speed pill row, generalized. */
+function Segmented<T extends string | number>({ options, value, onSelect }: {
+  options: readonly { value: T; label: string }[];
+  value: T;
+  onSelect: (v: T) => void;
+}) {
+  return (
+    <div style={{
+      display: 'flex',
+      gap: 6,
+      padding: 4,
+      borderRadius: 10,
+      background: 'linear-gradient(180deg, rgba(84, 58, 22, 0.14), rgba(84, 58, 22, 0.08))',
+      border: '1px solid rgba(84, 58, 22, 0.32)',
+      boxShadow: 'inset 0 2px 6px rgba(70, 45, 12, 0.25)',
+    }}>
+      {options.map((o) => {
+        const active = o.value === value;
+        return (
+          <button
+            key={String(o.value)}
+            onClick={() => onSelect(o.value)}
+            style={{
+              flex: 1,
+              padding: '8px 0',
+              borderRadius: 7,
+              border: active ? '1px solid #5a3f1c' : '1px solid transparent',
+              background: active
+                ? 'linear-gradient(180deg, #e2ab42, #b07825 55%, #955f19)'
+                : 'transparent',
+              color: active ? '#241503' : palette.textDim,
+              textShadow: active ? '0 1px 0 rgba(255, 235, 180, 0.45)' : undefined,
+              boxShadow: active
+                ? 'inset 0 1px 0 rgba(255, 240, 200, 0.7), 0 2px 5px rgba(40, 20, 0, 0.25)'
+                : undefined,
+              ...text.label,
+              fontVariantNumeric: 'tabular-nums',
+              cursor: 'pointer',
+            }}
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Full-width recessed row with an On/Off pill on the right. */
+function ToggleRow({ label, hint, on, onClick }: {
+  label: string;
+  hint?: string;
+  on: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={hint}
+      style={{
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 14,
+        padding: '10px 12px',
+        borderRadius: 10,
+        background: 'linear-gradient(180deg, rgba(84, 58, 22, 0.14), rgba(84, 58, 22, 0.08))',
+        border: '1px solid rgba(84, 58, 22, 0.32)',
+        boxShadow: 'inset 0 2px 6px rgba(70, 45, 12, 0.25)',
+        cursor: 'pointer',
+      }}
+    >
+      <span style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2,
+        textAlign: 'left',
+      }}>
+        <span style={{ ...text.label, color: palette.text }}>{label}</span>
+        {hint && <span style={{ ...text.body, fontSize: 11, color: palette.textFaint }}>{hint}</span>}
+      </span>
+      <span style={{
+        padding: '4px 12px',
+        borderRadius: 7,
+        border: '1px solid #5a3f1c',
+        background: on
+          ? 'linear-gradient(180deg, #e2ab42, #b07825 55%, #955f19)'
+          : 'rgba(84, 58, 22, 0.12)',
+        color: on ? '#241503' : palette.textDim,
+        textShadow: on ? '0 1px 0 rgba(255, 235, 180, 0.45)' : undefined,
+        boxShadow: on
+          ? 'inset 0 1px 0 rgba(255, 240, 200, 0.7), 0 2px 5px rgba(40, 20, 0, 0.25)'
+          : 'inset 0 1px 2px rgba(70, 45, 12, 0.25)',
+        ...text.label,
+        flexShrink: 0,
+      }}>
+        {on ? 'On' : 'Off'}
+      </span>
+    </button>
   );
 }
 

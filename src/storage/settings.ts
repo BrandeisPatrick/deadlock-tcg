@@ -8,10 +8,16 @@ import { useSyncExternalStore } from 'react';
 export interface AppSettings {
   /** Multiplier on combat beat tempo — higher = faster animations. */
   combatSpeed: 1 | 1.5 | 2;
+  /** Force framer-motion's reduced-motion mode. false still honours the
+   *  OS-level prefers-reduced-motion preference (MotionConfig 'user'). */
+  reducedMotion: boolean;
+  /** Side panel when a match starts: 'auto' opens it only on wide
+   *  viewports (≥1100px), the explicit values always win. */
+  panelDefault: 'auto' | 'open' | 'closed';
 }
 
 const KEY = 'deadlock-tcg-settings';
-const DEFAULTS: AppSettings = { combatSpeed: 1 };
+const DEFAULTS: AppSettings = { combatSpeed: 1, reducedMotion: false, panelDefault: 'auto' };
 
 let cache: AppSettings | null = null;
 const listeners = new Set<() => void>();
@@ -29,6 +35,9 @@ export function getSettings(): AppSettings {
     // step duration and make combat resolve with no visible beats.
     const speed = Number(loaded.combatSpeed);
     loaded.combatSpeed = (speed === 1 || speed === 1.5 || speed === 2 ? speed : DEFAULTS.combatSpeed) as AppSettings['combatSpeed'];
+    loaded.reducedMotion = loaded.reducedMotion === true;
+    loaded.panelDefault = (['auto', 'open', 'closed'] as const).includes(loaded.panelDefault)
+      ? loaded.panelDefault : DEFAULTS.panelDefault;
     cache = loaded;
   }
   return cache!;

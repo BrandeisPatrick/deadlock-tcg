@@ -464,21 +464,8 @@ function Footer() {
         gap: 4,
       }}
     >
-      <div style={{ ...text.body, color: palette.textFaint }}>
-        A fan-made tabletop adaptation. Not affiliated with Valve.
-      </div>
-      <div
-        style={{
-          fontFamily: fonts.display,
-          fontSize: 11,
-          letterSpacing: '0.32em',
-          textTransform: 'uppercase',
-          color: palette.textFaint,
-          opacity: 0.75,
-        }}
-      >
-        v0.1 · early prototype
-      </div>
+      {/* Disclaimer + version moved into the System menu's About block —
+          the title composition ends on the tiles instead of fine print. */}
     </motion.div>
   );
 }

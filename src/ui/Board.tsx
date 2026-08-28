@@ -34,7 +34,7 @@ import { DamageFxContext, type DamageFxResolver } from './effects/DamageFxContex
 import { UltMomentFlash } from './effects/UltMomentFlash';
 import { CardPlayFlash, CARD_REVEAL_MS } from './effects/CardPlayFlash';
 import { COMBAT_STEP_MS } from './hooks/useCombatSpeed';
-import { useSettings } from '@/storage/settings';
+import { useSettings, getSettings } from '@/storage/settings';
 import { useFitScale } from './hooks/useFitScale';
 import { useViewport } from './hooks/useViewport';
 import { palette, fonts, radius, shadow, spring, text, DAMAGE_BEAT_MS } from './tokens';
@@ -64,10 +64,15 @@ export function Board(props: BoardProps<GameState>) {
   // top-right; flip off any time to take control back.
   const [autoPlay, setAutoPlay] = useState(false);
   const [logOpen, setLogOpen] = useState(false);
-  // Panel default: the patron plaques now carry the vitals on-board, so the
-  // panel is optional depth (log + detail). Auto-open only where its 320px
-  // cost is negligible; tablets start with the full battlefield instead.
-  const [panelOpen, setPanelOpen] = useState(() => window.innerWidth >= 1100);
+  // Panel default: the patron plaques carry the vitals on-board, so the
+  // panel is optional depth (log + detail). The player's setting wins;
+  // 'auto' opens it only where its 320px cost is negligible (wide screens).
+  const [panelOpen, setPanelOpen] = useState(() => {
+    const pref = getSettings().panelDefault;
+    if (pref === 'open') return true;
+    if (pref === 'closed') return false;
+    return window.innerWidth >= 1100;
+  });
   const [preview, setPreview] = useState<{ card: CardInstance; hover: boolean } | null>(null);
   const [heroDetail, setHeroDetail] = useState<CardInstance | null>(null);
   // Equipment replacement flow: when the player tries to attach a 4th piece

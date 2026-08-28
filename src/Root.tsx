@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
+import { useSettings } from '@/storage/settings';
 import { App } from './App';
 import { StartScreen } from './ui/start/StartScreen';
 import { HeroPreferenceScreen } from './ui/collection/HeroPreferenceScreen';
@@ -137,7 +138,12 @@ export function Root() {
     [goMatch, goStart],
   );
 
+  const { reducedMotion } = useSettings();
+
   return (
+    // reducedMotion 'always' disables framer's transform/layout animations
+    // app-wide (opacity still fades); 'user' defers to the OS preference.
+    <MotionConfig reducedMotion={reducedMotion ? 'always' : 'user'}>
     <MatchNavContext.Provider value={matchNav}>
       <TornEdgeDefs />
       <AnimatePresence mode="wait">
@@ -193,5 +199,6 @@ export function Root() {
         exitLabel={systemExitLabel}
       />
     </MatchNavContext.Provider>
+    </MotionConfig>
   );
 }
