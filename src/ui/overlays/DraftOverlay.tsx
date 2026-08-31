@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { DraftState, PlayerID } from '@/engine/types';
 import { CARDS_BY_ID } from '@/cards';
 import { getHeroIdentity } from '@/cards/art/heroPalette';
+import { heroArtFocus } from '@/cards/art/heroArt';
 import { palette, fonts, spring, text } from '../tokens';
 import { getMatchConfig } from '@/storage/matchConfig';
 import { useViewport } from '../hooks/useViewport';
@@ -639,7 +640,7 @@ function HeroPreview({
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          objectPosition: '50% 22%',
+          objectPosition: heroArtFocus(heroId, 'splash', '50% 22%'),
           userSelect: 'none',
         }}
       />
