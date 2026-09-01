@@ -612,7 +612,6 @@ function HeroPreview({
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'flex-end',
         borderRadius: 10,
         overflow: 'hidden',
         background: `linear-gradient(135deg, ${identity.accent}, #1a0f06)`,
@@ -620,10 +619,10 @@ function HeroPreview({
         boxShadow: '0 12px 32px rgba(40,20,0,0.32), inset 0 0 0 1px rgba(176,120,37,0.18)',
       }}
     >
+      {/* Ambient fill — the splash blurred and dimmed behind everything.
+          The blur here is intentional atmosphere; the sharp copy renders in
+          the band below at its natural aspect. */}
       <img
-        // Cinematic full-art splash (banner-less top-crop of the hero-select
-        // screen). Falls back to the tight `_card` portrait for any hero that
-        // has no splash asset (e.g. Rem).
         src={`${HERO_IMG_BASE}${heroId}_splash.webp`}
         onError={(e) => {
           const img = e.currentTarget;
@@ -633,6 +632,7 @@ function HeroPreview({
           }
         }}
         alt=""
+        aria-hidden
         draggable={false}
         style={{
           position: 'absolute',
@@ -640,24 +640,58 @@ function HeroPreview({
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          objectPosition: heroArtFocus(heroId, 'splash', '50% 22%'),
+          filter: 'blur(26px) saturate(1.1)',
+          transform: 'scale(1.25)',
+          opacity: 0.5,
           userSelect: 'none',
         }}
       />
+      <div aria-hidden style={{ position: 'absolute', inset: 0, background: 'rgba(10, 5, 2, 0.45)' }} />
 
-      <div
-        aria-hidden
-        style={{
+      {/* Sharp art band — the splash at (near) its native aspect, so the
+          whole composition is visible and the source pixels aren't blown up
+          into a tall portrait crop (the old full-bleed cover upscaled the
+          692×352 assets ~3× and showed only a sliver). */}
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        aspectRatio: '1230 / 626',
+        flexShrink: 0,
+        overflow: 'hidden',
+      }}>
+        <img
+          src={`${HERO_IMG_BASE}${heroId}_splash.webp`}
+          onError={(e) => {
+            const img = e.currentTarget;
+            if (!img.dataset.fallback) {
+              img.dataset.fallback = '1';
+              img.src = `${HERO_IMG_BASE}${heroId}_card.webp`;
+            }
+          }}
+          alt=""
+          draggable={false}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: heroArtFocus(heroId, 'splash', '50% 22%'),
+            userSelect: 'none',
+          }}
+        />
+        {/* Blend the band's lower edge into the info area. */}
+        <div aria-hidden style={{
           position: 'absolute',
-          inset: 0,
-          background: `linear-gradient(to top, rgba(10,5,2,0.92) 0%, rgba(10,5,2,0.55) 35%, transparent 60%)`,
-        }}
-      />
+          left: 0, right: 0, bottom: 0,
+          height: 70,
+          background: 'linear-gradient(to top, rgba(10,5,2,0.75), transparent)',
+        }} />
+      </div>
 
       <div
         style={{
           position: 'relative',
-          padding: '32px 40px 36px',
+          flex: 1,
+          padding: '18px 40px 32px',
           display: 'flex',
           flexDirection: 'column',
           gap: 14,
@@ -744,7 +778,7 @@ function HeroPreview({
           </div>
         )}
 
-        <div style={{ marginTop: 18 }}>
+        <div style={{ marginTop: 'auto', paddingTop: 18 }}>
           <motion.button
             disabled={!myTurn}
             onClick={() => myTurn && onPick(heroId)}
